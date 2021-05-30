@@ -2,7 +2,7 @@ on: [push, pull_request] # TODO: release [released, prereleased]
 
 jobs:
   vsbuild:
-    name: VS Build
+    name: Build using VS
     runs-on: windows-latest # this image currently has VS2019, but may change in any time
 
     strategy:
@@ -55,6 +55,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         name: Checkout repo
+      - run: perl update-build-timestamp.pl
+        name: Update build timestamp
       - run: apt install -y gcc-mingw-w64-${{ matrix.prefix }} libslirp-dev pkg-config zlib1g-dev zlibc
         name: Install dependecines
       - run: ./autogen.sh
@@ -144,4 +146,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: mingw-${{ matrix.prefix }}-${{ matrix.type }}
-          path:build
+          path: build
