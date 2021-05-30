@@ -44,9 +44,8 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ steps.zipname.outputs.zipname-sub }}
-          path:
-            bin/${{ matrix.arch }}/${{ matrix.type }}
+          name: vs-${{ steps.zipname.outputs.zipname-sub }}
+          path: bin/${{ matrix.arch }}/${{ matrix.type }}
   mingw:
     name: Build with MSYS2
     runs-on: windows-latest
@@ -78,7 +77,11 @@ jobs:
       - run: perl update-build-timestamp.pl
         name: Update build timestamp
       - name: Build using script
-        run: ./build-mingw${{ matrix.type }}
+        env:
+          EXE_FILE: build-mingw${{ matrix.type }}
+        run: |
+          chmod +x $EXE_FILE
+          ./$EXE_FILE
       - name: Pack zip
         run: |
           strip src/dosbox-x.exe
@@ -90,5 +93,5 @@ jobs:
       - name: Upload build
         uses: actions/upload-artifact@v2
         with:
-          name: win${{ matrix.shell }}${{ matrix.type }}
+          name: mingw-win${{ matrix.shell }}${{ matrix.type }}
           path: build
