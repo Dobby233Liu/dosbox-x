@@ -53,34 +53,27 @@ jobs:
     
     strategy:
       matrix:
-        shell: [32, 64]
+        arch: [i686, x86_64]
         type: ["", -sdl2, -lowend, -sdldraw]
       fail-fast: false
       
     defaults:
       run:
         shell: bash
-        # https://github.com/actions/runner/issues/497
-        # https://www.msys2.org/wiki/Launchers/#the-idea
-        # https://github.com/actions/runner/issues/1066
-        #C:\msys64\usr\bin\env.exe CHERE_INVOKING=1 MSYSTEM=MINGW${{ matrix.shell }} /usr/bin/bash -lc -e -o pipefail {0}
     env:
       ZIP_NAME: dosbox-x-mingw-win${{ matrix.shell }}${{ matrix.type }}.zip
       
     steps:
       - uses: actions/checkout@v2
         name: Checkout repo
-      # If we were going to using Git Bash...
-      #- uses: git-for-windows/setup-git-for-windows-sdk@master
-      #  name: Download envorinment
-      #  with:
-      #    flavor: full # full MSYS2 envorinment
-      #    architecture: ${{ matrix.arch }}
-      #    verbose: false
+      - uses: git-for-windows/setup-git-for-windows-sdk@master
+        name: Download envorinment
+        with:
+          flavor: minimal
+          architecture: ${{ matrix.arch }}
+          verbose: false
       - run: perl update-build-timestamp.pl
         name: Update build timestamp
-      - run: pacman -Syu automake-wrapper
-        name: Install some dependcies
       - name: Build using script
         env:
           EXE_FILE: build-mingw${{ matrix.type }}
@@ -98,5 +91,5 @@ jobs:
       - name: Upload build
         uses: actions/upload-artifact@v2
         with:
-          name: mingw-win${{ matrix.shell }}${{ matrix.type }}
+          name: mingw-${{ matrix.arch }}${{ matrix.type }}
           path: _build
