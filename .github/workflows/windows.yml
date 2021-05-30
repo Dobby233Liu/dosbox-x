@@ -60,7 +60,7 @@ jobs:
     defaults:
       run:
         # https://github.com/actions/runner/issues/497
-        shell: C:\msys64\mingw${{ matrix.shell }}.exe --noprofile --norc -e -o pipefail {0}
+        shell: cmd /c C:\msys64\msys2_shell.cmd -mingw${{ matrix.shell }} -here -no-start -shell "bash --noprofile --norc -e -o pipefail {0}"
     env:
       ZIP_NAME: dosbox-x-mingw-win${{ matrix.shell }}${{ matrix.type }}.zip
       
