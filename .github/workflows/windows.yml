@@ -76,11 +76,11 @@ jobs:
       - name: Ensure deps installed (32)
         continue-on-error: true
         if: matrix.arch == '32'
-        run: pacman -Syu --needed --noconfirm mingw-w64-i686-toolchain
+        run: pacman -Syu --needed --noconfirm mingw-w64-i686-toolchain mingw-w64-pkg-config
       - name: Ensure deps installed (64)
         continue-on-error: true
         if: matrix.arch == '64'
-        run: pacman -Syu --needed --noconfirm mingw-w64-x86_64-toolchain
+        run: pacman -Syu --needed --noconfirm mingw-w64-x86_64-toolchain mingw-w64-pkg-config
         
       - uses: actions/checkout@v2
         name: Checkout repo
