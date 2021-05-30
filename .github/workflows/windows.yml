@@ -24,8 +24,10 @@ jobs:
           GH_BUILD_ARCH: ${{ matrix.arch }}
         run: |
           msbuild dosbox-x.sln /p:Configuration=$env:GH_BUILD_TYPE /p:Platform=$env:GH_BUILD_ARCH
-          cd bin/${{ matrix.arch }}/${{ matrix.type }}
-          del *.exp *.lib *.pdb
+          cd "bin/${{ matrix.arch }}/${{ matrix.type }}"
+          del dosbox-x.exp
+          del dosbox-x.lib
+          del dosbox-x.pdb
       - name: Internally decide artifact name
         id: zipname
         env:
@@ -131,12 +133,20 @@ jobs:
           # FIXME: MinGW builds should enable the debugger eventually
           ./configure --enable-core-inline --disable-mt32 --disable-libfluidsynth --disable-libslirp --enable-d3d9 --enable-d3d-shaders  --prefix=/usr
           make -j
+      - name: MINGW_ARCH hack
+        run: |
+          export MINGW_ARCH=${{ matrix.prefix }}
+          if [ $MINGW_ARCH -eq "x86-64" ]
+          then
+          export MINGW_ARCH="x86_64"
+          fi
+          echo "MINGW_ARCH=$MINGW_ARCH" >> $GITHUB_ENV
       - name: Compile DOSBox-X (SDL2)
         if: matrix.type == 'sdl2'
         run: |
           chmod +x configure
           # FIXME: MinGW builds should enable the debugger eventually
-          ./configure --enable-core-inline --enable-d3d9 --enable-d3d-shaders --enable-sdl2 --prefix=/usr
+          ./configure --enable-core-inline --enable-d3d9 --enable-d3d-shaders --target=$MINGW_ARCH-w64-mingw32 --enable-sdl2 --prefix=/usr
           make -j
       - name: Prepare artifact
         run: |
