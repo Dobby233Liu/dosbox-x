@@ -60,7 +60,8 @@ jobs:
     defaults:
       run:
         # https://github.com/actions/runner/issues/497
-        shell: C:\msys64\usr\bin\env CHERE_INVOKING=1 MSYSTEM=MINGW${{ matrix.shell }} /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+        # https://www.msys2.org/wiki/Launchers/#the-idea
+        shell: C:\msys64\usr\bin\env.exe CHERE_INVOKING=1 MSYSTEM=MINGW${{ matrix.shell }} /usr/bin/bash -lc {0}
     env:
       ZIP_NAME: dosbox-x-mingw-win${{ matrix.shell }}${{ matrix.type }}.zip
       
