@@ -53,25 +53,24 @@ jobs:
     
     strategy:
       matrix:
-        arch: [i686, x86_64]
+        arch: [32, 64]
         type: ["", -sdl2, -lowend, -sdldraw]
       fail-fast: false
       
     defaults:
       run:
-        shell: bash
+        shell: C:\msys64\usr\bin\bash.exe --noprofile --norc -e -o pipefail {0}
     env:
       ZIP_NAME: dosbox-x-mingw-win${{ matrix.shell }}${{ matrix.type }}.zip
+      MSYSTEM: MINGW${{ matrix.arch }}
+      CHERE_INVOKING: 1
       
     steps:
+      - shell: cmd
+        run: echo C:\msys64\usr\bin>> %GITHUB_PATH%
+        name: Put MSYS2 into PATH
       - uses: actions/checkout@v2
         name: Checkout repo
-      - uses: git-for-windows/setup-git-for-windows-sdk@main
-        name: Download envorinment
-        with:
-          flavor: minimal
-          architecture: ${{ matrix.arch }}
-          verbose: false
       - run: perl update-build-timestamp.pl
         name: Update build timestamp
       - name: Build using script
@@ -91,5 +90,5 @@ jobs:
       - name: Upload build
         uses: actions/upload-artifact@v2
         with:
-          name: mingw-${{ matrix.arch }}${{ matrix.type }}
+          name: mingw-win${{ matrix.arch }}${{ matrix.type }}
           path: _build
