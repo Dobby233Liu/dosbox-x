@@ -64,11 +64,29 @@ jobs:
       
     steps:
       - uses: msys2/setup-msys2@v2
+        name: Setup MSYS2 [i686]
+        if: matrix.arch == "32"
         with:
           MSYSTEM: MINGW${{ matrix.arch }}
           path-type: strict
           install: >-
+            base
             base-devel
+            libraries
+            development
+            mingw-w64-i686-toolchain
+      - uses: msys2/setup-msys2@v2
+        name: Setup MSYS2 [x86_64]
+        if: matrix.arch == "64"
+        with:
+          MSYSTEM: MINGW${{ matrix.arch }}
+          path-type: strict
+          install: >-
+            base
+            base-devel
+            libraries
+            development
+            mingw-w64-x86_64-toolchain
         
       - uses: actions/checkout@v2
         name: Checkout repo
