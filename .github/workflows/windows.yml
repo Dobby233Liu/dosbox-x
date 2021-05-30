@@ -2,7 +2,7 @@ on: [push, pull_request] # TODO: release [released, prereleased]
 
 jobs:
   vsbuild:
-    name: Build for VS
+    name: VS Build
     runs-on: windows-latest # this image currently has VS2019, but may change in any time
 
     strategy:
@@ -14,6 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         name: Checkout repo
+      - run: perl update-build-timestamp.pl
+        name: Update build timestamp
       - uses: microsoft/setup-msbuild@c26a08ba26249b81327e26f6ef381897b6a8754d # commithash because 1.0.2
       - name: Build
         working-directory: vs2015
@@ -41,3 +43,105 @@ jobs:
           name: ${{ steps.zipname.outputs.zipname-sub }}
           path:
             bin/${{ matrix.arch }}/${{ matrix.type }}
+  mingw:
+    name: MinGW(-w64) build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        prefix: [x86-64, x86]
+        type: ["", sdl2, lowend, sdldraw]
+    env:
+      ZIP_NAME: dosbox-x-mingw-${{ matrix.prefix }}-${{ matrix.type }}.zip
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout repo
+      - run: apt install -y gcc-mingw-w64-${{ matrix.prefix }} libslirp-dev pkg-config zlib1g-dev zlibc
+        name: Install dependecines
+      - run: ./autogen.sh
+        name: Autoregen
+      - name: Compile SDL1
+        if: matrix.type != "sdl2"
+        run: |
+          chmod +x vs2015/sdl/build-scripts/strip_fPIC.sh
+          cd vs2015/sdl
+          ./build-dosbox.sh
+          cd $GITHUB_WORKSPACE/vs2015/sdlnet
+          ./build-dosbox.sh
+      - name: Compile SDL2
+        if: matrix.type == "sdl2"
+        run: |
+          chmod +x vs2015/sdl/build-scripts/strip_fPIC.sh
+          cd vs2015/sdl2
+          ./build-dosbox.sh
+          cd $GITHUB_WORKSPACE/vs2015/sdlnet
+          ./build-dosbox.sh
+      - name: Compile deps
+        run: |
+          cd $GITHUB_WORKSPACE/vs2015/libpng
+          ./build-dosbox.sh
+          top=$GITHUB_WORKSPACE
+          new="-I$top/vs2015/libpng/linux-host/include "
+          nld="-L$top/vs2015/libpng/linux-host/lib "
+          export CFLAGS="$new$CFLAGS"
+          export LDFLAGS="$nld$LDFLAGS"
+          export CPPFLAGS="$new$CPPFLAGS"
+          export CXXFLAGS="$new$CXXFLAGS"
+          echo "CFLAGS=\"$CFLAGS\"" >> $GITHUB_ENV
+          echo "CPPFLAGS=\"$CPPFLAGS\"" >> $GITHUB_ENV
+          echo "CXXFLAGS=\"$CXXFLAGS\"" >> $GITHUB_ENV
+          echo "LDFLAGS=\"$LDFLAGS\"" >> $GITHUB_ENV
+          cd $GITHUB_WORKSPACE/vs2015/freetype
+          ./build-dosbox.sh
+          new="-I$top/vs2015/freetype/linux-host/include/freetype2 "
+          nld="-L$top/vs2015/freetype/linux-host/lib -lfreetype "
+          export CFLAGS="$new$CFLAGS"
+          export LDFLAGS="$nld$LDFLAGS"
+          export CPPFLAGS="$new$CPPFLAGS"
+          export CXXFLAGS="$new$CXXFLAGS"
+          export INTERNAL_FREETYPE=1
+          echo "CFLAGS=\"$CFLAGS\"" >> $GITHUB_ENV
+          echo "CPPFLAGS=\"$CPPFLAGS\"" >> $GITHUB_ENV
+          echo "CXXFLAGS=\"$CXXFLAGS\"" >> $GITHUB_ENV
+          echo "LDFLAGS=\"$LDFLAGS\"" >> $GITHUB_ENV
+          echo "INTERNAL_FREETYPE=1" >> $GITHUB_ENV
+      - name: Compile DOSBox-X
+        if: matrix.type == ""
+        run: |
+          chmod +x configure
+          # FIXME: MinGW builds should enable the debugger eventually
+          ./configure --enable-core-inline --enable-d3d9 --enable-d3d-shaders --prefix=/usr
+          make -j
+      - name: Compile DOSBox-X (sdldraw)
+        if: matrix.type == "sdldraw"
+        run: |
+          chmod +x configure
+          # FIXME: MinGW builds should enable the debugger eventually
+          ./configure --enable-core-inline --enable-force-menu-sdldraw --enable-d3d9 --enable-d3d-shaders --prefix=/usr
+          make -j
+      - name: Compile DOSBox-X (lowend)
+        if: matrix.type == "lowend"
+        run: |
+          chmod +x configure
+          # FIXME: MinGW builds should enable the debugger eventually
+          ./configure --enable-core-inline --disable-mt32 --disable-libfluidsynth --disable-libslirp --enable-d3d9 --enable-d3d-shaders  --prefix=/usr
+          make -j
+      - name: Compile DOSBox-X (SDL2)
+        if: matrix.type == "sdl2"
+        run: |
+          chmod +x configure
+          # FIXME: MinGW builds should enable the debugger eventually
+          ./configure --enable-core-inline --enable-d3d9 --enable-d3d-shaders --enable-sdl2 --prefix=/usr
+          make -j
+      - name: Prep for artifact
+        run: |
+          strip src/dosbox-x.exe
+          mkdir -p build
+          cp src/dosbox-x.exe build/dosbox-x.exe
+          cp CHANGELOG build/CHANGELOG.txt
+          cp dosbox-x.reference.conf build/dosbox-x.reference.conf
+          cp dosbox-x.reference.full.conf build/dosbox-x.reference.full.conf
+      - name: Push into artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: mingw-${{ matrix.prefix }}-${{ matrix.type }}
+          path:build
