@@ -89,10 +89,12 @@ jobs:
           cd $GITHUB_WORKSPACE/vs2015/sdlnet
           ./build-dosbox.sh
       - name: log
-        uses: actions/upload-artifacts@v2
+        uses: actions/upload-artifact@v2
+        if: matrix.type != 'sdl2'
         with:
           path: vs2015/sdl/config.log
       - name: die
+        if: matrix.type != 'sdl2'
         run: exit 255
       #---
       - name: Compile SDL2
