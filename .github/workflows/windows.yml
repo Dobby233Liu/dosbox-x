@@ -67,7 +67,10 @@ jobs:
       
     steps:
       - shell: cmd
-        run: echo C:\msys64\usr\bin>> %GITHUB_PATH%
+        run: |
+          echo C:\msys64\bin>> %GITHUB_PATH%
+          echo C:\msys64\usr\bin>> %GITHUB_PATH%
+          echo C:\msys64\usr\local\bin>> %GITHUB_PATH%
         name: Put MSYS2 into PATH
       - uses: actions/checkout@v2
         name: Checkout repo
