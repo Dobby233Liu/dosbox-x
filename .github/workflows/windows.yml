@@ -3,9 +3,8 @@ on: [push, pull_request] # TODO: release [released, prereleased]
 
 jobs:
   vsbuild:
-    name: Build using Visual Studio
+    name: Build with Visual Studio
     runs-on: windows-latest # this image currently has VS2019, but may change in any time
-    if: false # debug
 
     strategy:
       matrix:
@@ -59,28 +58,17 @@ jobs:
       
     defaults:
       run:
-        shell: C:\msys64\usr\bin\bash.exe --noprofile --norc -e -o pipefail {0}
+        shell: msys2 {0}
     env:
-      ZIP_NAME: dosbox-x-mingw-win${{ matrix.shell }}${{ matrix.type }}.zip
-      MSYSTEM: MINGW${{ matrix.arch }}
-      CHERE_INVOKING: 1
-      MSYS2_PATH_TYPE: inherit
+      ZIP_NAME: dosbox-x-mingw-win${{ matrix.arch }}${{ matrix.type }}.zip
       
     steps:
-      - shell: cmd
-        run: |
-          echo C:\msys64\bin>> %GITHUB_PATH%
-          echo C:\msys64\usr\bin>> %GITHUB_PATH%
-          echo C:\msys64\usr\local\bin>> %GITHUB_PATH%
-        name: Put MSYS2 into PATH
-      - name: Ensure deps installed (32)
-        continue-on-error: true
-        if: matrix.arch == '32'
-        run: pacman -Syu --needed --noconfirm mingw-w64-i686-toolchain mingw-w64-pkg-config
-      - name: Ensure deps installed (64)
-        continue-on-error: true
-        if: matrix.arch == '64'
-        run: pacman -Syu --needed --noconfirm mingw-w64-x86_64-toolchain mingw-w64-pkg-config
+      - uses: msys2/setup-msys2@v2
+        with:
+          MSYSTEM: MINGW${{ matrix.arch }}
+          path-type: strict
+          install: >-
+            base-devel
         
       - uses: actions/checkout@v2
         name: Checkout repo
