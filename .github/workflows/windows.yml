@@ -5,6 +5,7 @@ jobs:
   vsbuild:
     name: Build using Visual Studio
     runs-on: windows-latest # this image currently has VS2019, but may change in any time
+    if: false # debug
 
     strategy:
       matrix:
@@ -80,18 +81,20 @@ jobs:
         env:
           EXE_FILE: build-mingw${{ matrix.type }}
         run: |
+          echo Hello world
+          uname -s
           chmod +x $EXE_FILE
           ./$EXE_FILE
       - name: Pack zip
         run: |
           strip src/dosbox-x.exe
-          mkdir -p build
-          cp src/dosbox-x.exe build/dosbox-x.exe
-          cp CHANGELOG build/CHANGELOG.txt
-          cp dosbox-x.reference.conf build/dosbox-x.reference.conf
-          cp dosbox-x.reference.full.conf build/dosbox-x.reference.full.conf
+          mkdir -p _build
+          cp src/dosbox-x.exe _build/dosbox-x.exe
+          cp CHANGELOG _build/CHANGELOG.txt
+          cp dosbox-x.reference.conf _build/dosbox-x.reference.conf
+          cp dosbox-x.reference.full.conf _build/dosbox-x.reference.full.conf
       - name: Upload build
         uses: actions/upload-artifact@v2
         with:
           name: mingw-win${{ matrix.shell }}${{ matrix.type }}
-          path: build
+          path: _build
