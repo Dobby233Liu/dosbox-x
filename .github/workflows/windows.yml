@@ -1,3 +1,4 @@
+name: Build for Windows (or HX-DOS Extender)
 on: [push, pull_request] # TODO: release [released, prereleased]
 
 jobs:
@@ -23,6 +24,8 @@ jobs:
           GH_BUILD_ARCH: ${{ matrix.arch }}
         run: |
           msbuild dosbox-x.sln /p:Configuration=$env:GH_BUILD_TYPE /p:Platform=$env:GH_BUILD_ARCH
+          cd bin/${{ matrix.arch }}/${{ matrix.type }}
+          del *.exp *.lib *.pdb
       - name: Internally decide artifact name
         id: zipname
         env:
@@ -36,7 +39,7 @@ jobs:
           }
           Write-Host "::set-output name=zipname-sub::$zipname"
           $zip = "dosbox-x-windows-vs-$zipname.zip"
-      - name: Push into artifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: ${{ steps.zipname.outputs.zipname-sub }}
@@ -58,7 +61,7 @@ jobs:
         name: Checkout repo
       - run: perl update-build-timestamp.pl
         name: Update build timestamp
-      - run: apt install -y gcc-mingw-w64-${{ matrix.prefix }} libslirp-dev pkg-config zlib1g-dev zlibc
+      - run: sudo apt install -y gcc-mingw-w64-${{ matrix.prefix }} libslirp-dev pkg-config zlib1g-dev zlibc
         name: Install dependecines
       - run: ./autogen.sh
         name: Autoregen
@@ -135,7 +138,7 @@ jobs:
           # FIXME: MinGW builds should enable the debugger eventually
           ./configure --enable-core-inline --enable-d3d9 --enable-d3d-shaders --enable-sdl2 --prefix=/usr
           make -j
-      - name: Prep for artifact
+      - name: Prepare artifact
         run: |
           strip src/dosbox-x.exe
           mkdir -p build
@@ -143,7 +146,7 @@ jobs:
           cp CHANGELOG build/CHANGELOG.txt
           cp dosbox-x.reference.conf build/dosbox-x.reference.conf
           cp dosbox-x.reference.full.conf build/dosbox-x.reference.full.conf
-      - name: Push into artifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: mingw-${{ matrix.prefix }}-${{ matrix.type }}
