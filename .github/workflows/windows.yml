@@ -61,7 +61,8 @@ jobs:
       run:
         # https://github.com/actions/runner/issues/497
         # https://www.msys2.org/wiki/Launchers/#the-idea
-        shell: C:\msys64\usr\bin\env.exe CHERE_INVOKING=1 MSYSTEM=MINGW${{ matrix.shell }} /usr/bin/bash -lc {0}
+        # https://github.com/actions/runner/issues/1066
+        shell: C:\msys64\usr\bin\env.exe CHERE_INVOKING=1 MSYSTEM=MINGW${{ matrix.shell }} /usr/bin/bash -lc -e -o pipefail {0}
     env:
       ZIP_NAME: dosbox-x-mingw-win${{ matrix.shell }}${{ matrix.type }}.zip
       
@@ -82,8 +83,6 @@ jobs:
         env:
           EXE_FILE: build-mingw${{ matrix.type }}
         run: |
-          echo Hello world
-          uname -s
           chmod +x $EXE_FILE
           ./$EXE_FILE
       - name: Pack zip
