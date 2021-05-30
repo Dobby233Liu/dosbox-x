@@ -7,14 +7,14 @@ jobs:
 
     strategy:
       matrix:
-        arch: [Win32, x64, ARM32, ARM64]
+        arch: [Win32, x64, ARM, ARM64]
         type: [Release, "Release SDL2"]
       # TODO: use python powershell or perl to convert to zip name later???
 
     steps:
       - uses: actions/checkout@v2
         name: Checkout repo
-      - uses: microsoft/setup-msbuild@master # master because template
+      - uses: microsoft/setup-msbuild@c26a08ba26249b81327e26f6ef381897b6a8754d # commithash because 1.0.2
       - name: Build
         working-directory: vs2015
         env:
@@ -22,9 +22,22 @@ jobs:
           GH_BUILD_ARCH: ${{ matrix.arch }}
         run: |
           msbuild dosbox-x.sln /p:Configuration=$env:GH_BUILD_TYPE /p:Platform=$env:GH_BUILD_ARCH
+      - name: Internally decide artifact name
+        id: zipname
+        env:
+          GH_BUILD_TYPE: ${{ matrix.type }}
+          GH_BUILD_ARCH: ${{ matrix.arch }}
+        run: |
+          $zipname = $env:GH_BUILD_ARCH.ToLower()
+          if ( $env:GH_BUILD_TYPE -eq "Release SDL2" )
+          {
+            $zipname = "$zipname-sdl2"
+          }
+          Write-Host "::set-output name=zipname-sub::$zipname"
+          $zip = "dosbox-x-windows-vs-$zipname.zip"
       - name: Push into artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.type }} ${{ matrix.arch }} # TODO: use generated zipname
+          name: ${{ steps.zipname.outputs.zipname-sub }}
           path:
             bin/${{ matrix.arch }}/${{ matrix.type }}
