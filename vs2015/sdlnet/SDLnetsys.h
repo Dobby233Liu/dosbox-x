@@ -30,8 +30,11 @@
 #include <errno.h>
 #endif
 
-/* Include system network headers */
-#if defined(__WIN32__) || defined(WIN32)
+/* Include system network headers
+ * FIXME/NOTE: for some reasons MSYS2's mingw32 gcc
+ * complains about ip_mreq while building
+ * use unix headers for that reason */
+#if (defined(__WIN32__) || defined(WIN32)) && !defined(__MINGW32__)
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define __USE_W32_SOCKETS
 #ifdef _WIN64
