@@ -1200,6 +1200,10 @@ void DOSBOX_SetupConfigSections(void) {
         "true", "false", "quiet", "1", "0",
         0 };
 
+    const char* backendopts[] = {
+        "pcap", "slirp", "auto", "none",
+        0 };
+
     const char* workdiropts[] = {
         "autoprompt", "config", "custom", "default", "force", "noprompt", "program", "prompt", "userconfig",
         0 };
@@ -1769,7 +1773,7 @@ void DOSBOX_SetupConfigSections(void) {
     Pbool->Set_help("If set, load a VGA BIOS from a ROM image file. If clear, provide our own INT 10h emulation as normal.");
 
     Pstring = secprop->Add_string("vga bios rom image", Property::Changeable::OnlyAtStart, "");
-    Pbool->Set_help("If set, load the VGA BIOS from the specified file (must be 1KB to 64KB in size).\n"
+    Pstring->Set_help("If set, load the VGA BIOS from the specified file (must be 1KB to 64KB in size).\n"
                     "If left unset, and DOSBox-X is asked to load a VGA BIOS from a file, a file name\n"
                     "is chosen automatically from the machine type. For example, Tseng ET4000 emulation\n"
                     "(machine=svga_et4000) will look for et4000.bin. VGA BIOS ROM images can be dumped\n"
@@ -4056,8 +4060,11 @@ void DOSBOX_SetupConfigSections(void) {
         "private use, so modify the last three number blocks.\n"
         "I.e. AC:DE:48:88:99:AB.");
 
-    Pstring = secprop->Add_string("backend", Property::Changeable::WhenIdle, "pcap");
-    Pstring->Set_help("The backend (pcap or slirp) used for Ethernet emulation.");
+    Pstring = secprop->Add_string("backend", Property::Changeable::WhenIdle, "auto");
+    Pstring->Set_help("The backend (either pcap or slirp is supported) used for the NE2000 Ethernet emulation.\n"
+        "If set to \"auto\", then \"slirp\" is selected when available, otherwise \"pcap\" is selected when available.\n"
+        "NE2000 Ethernet emulation will be disabled if no backend is available (or the specified backend if unavailble).");
+    Pstring->Set_values(backendopts);
     Pstring->SetBasic(true);
 
     secprop = control->AddSection_prop("ethernet, pcap", &Null_Init, true);
