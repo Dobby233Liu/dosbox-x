@@ -79,6 +79,8 @@ jobs:
       #    verbose: false
       - run: perl update-build-timestamp.pl
         name: Update build timestamp
+      - run: pacman -Syu automake-wrapper
+        name: Install some dependcies
       - name: Build using script
         env:
           EXE_FILE: build-mingw${{ matrix.type }}
