@@ -70,7 +70,7 @@ jobs:
            MINGW_ARCH: ${{ matrix.prefix }}
         run: |
           export MINGW_ARCH_A=$MINGW_ARCH
-          if [ $MINGW_ARCH -eq "x86-64" ]
+          if [ $MINGW_ARCH == "x86-64" ]
           then
           export MINGW_ARCH_A=x86_64
           fi
