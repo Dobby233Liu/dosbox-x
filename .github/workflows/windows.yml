@@ -24,7 +24,7 @@ jobs:
           GH_BUILD_ARCH: ${{ matrix.arch }}
         run: |
           msbuild dosbox-x.sln /p:Configuration=$env:GH_BUILD_TYPE /p:Platform=$env:GH_BUILD_ARCH
-          cd "bin/${{ matrix.arch }}/${{ matrix.type }}"
+          cd "../bin/${{ matrix.arch }}/${{ matrix.type }}"
           del dosbox-x.exp
           del dosbox-x.lib
           del dosbox-x.pdb
