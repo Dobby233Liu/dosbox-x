@@ -59,18 +59,20 @@ jobs:
       
     defaults:
       run:
+        shell: bash
         # https://github.com/actions/runner/issues/497
         # https://www.msys2.org/wiki/Launchers/#the-idea
         # https://github.com/actions/runner/issues/1066
-        shell: C:\msys64\usr\bin\env.exe CHERE_INVOKING=1 MSYSTEM=MINGW${{ matrix.shell }} /usr/bin/bash -lc -e -o pipefail {0}
+        #C:\msys64\usr\bin\env.exe CHERE_INVOKING=1 MSYSTEM=MINGW${{ matrix.shell }} /usr/bin/bash -lc -e -o pipefail {0}
     env:
       ZIP_NAME: dosbox-x-mingw-win${{ matrix.shell }}${{ matrix.type }}.zip
       
     steps:
       - uses: actions/checkout@v2
         name: Checkout repo
+      - run: where bash && exit 255
+        shell: cmd # debug
       # If we were going to using Git Bash...
-      # (we use the included msys2 there, see top)
       #- uses: git-for-windows/setup-git-for-windows-sdk@master
       #  name: Download envorinment
       #  with:
