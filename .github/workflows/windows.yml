@@ -64,6 +64,7 @@ jobs:
       ZIP_NAME: dosbox-x-mingw-win${{ matrix.shell }}${{ matrix.type }}.zip
       MSYSTEM: MINGW${{ matrix.arch }}
       CHERE_INVOKING: 1
+      MSYS2_PATH_TYPE: inherit
       
     steps:
       - shell: cmd
@@ -72,8 +73,18 @@ jobs:
           echo C:\msys64\usr\bin>> %GITHUB_PATH%
           echo C:\msys64\usr\local\bin>> %GITHUB_PATH%
         name: Put MSYS2 into PATH
+      - name: Ensure deps installed (32)
+        continue-on-error: true
+        if: matrix.arch == '32'
+        run: pacman -Syu mingw-w64-i686-toolchain
+      - name: Ensure deps installed (64)
+        continue-on-error: true
+        if: matrix.arch == '64'
+        run: pacman -Syu mingw-w64-x86_64-toolchain
+        
       - uses: actions/checkout@v2
         name: Checkout repo
+        
       - run: perl update-build-timestamp.pl
         name: Update build timestamp
       - name: Build using script
@@ -82,6 +93,7 @@ jobs:
         run: |
           chmod +x $EXE_FILE
           ./$EXE_FILE
+          
       - name: Pack zip
         run: |
           strip src/dosbox-x.exe
