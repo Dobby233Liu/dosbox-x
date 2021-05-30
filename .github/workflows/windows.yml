@@ -55,6 +55,7 @@ jobs:
       matrix:
         prefix: [x86-64, i686]
         type: ["", sdl2, lowend, sdldraw]
+      fail-fast: false
     env:
       ZIP_NAME: dosbox-x-mingw-${{ matrix.prefix }}-${{ matrix.type }}.zip
       
@@ -132,28 +133,40 @@ jobs:
         run: |
           chmod +x configure
           # FIXME: MinGW builds should enable the debugger eventually
-          ./configure --host=$MINGW_ARCH-pc-mingw64 --enable-core-inline --enable-d3d9 --enable-d3d-shaders --prefix=/usr
+          ./configure --host=$MINGW_ARCH-w32-mingw64 --enable-core-inline --enable-d3d9 --enable-d3d-shaders --prefix=/usr
           make -j3
       - name: Compile DOSBox-X (sdldraw)
         if: matrix.type == 'sdldraw'
         run: |
           chmod +x configure
           # FIXME: MinGW builds should enable the debugger eventually
-          ./configure --host=$MINGW_ARCH-pc-mingw64 --enable-core-inline --enable-force-menu-sdldraw --enable-d3d9 --enable-d3d-shaders --prefix=/usr
+          ./configure --host=$MINGW_ARCH-w32-mingw64 --enable-core-inline --enable-force-menu-sdldraw --enable-d3d9 --enable-d3d-shaders --prefix=/usr
           make -j3
+      #debug start--
       - name: Compile DOSBox-X (lowend)
         if: matrix.type == 'lowend'
+        id: l
+        continue-on-error: true
         run: |
           chmod +x configure
           # FIXME: MinGW builds should enable the debugger eventually
-          ./configure --host=$MINGW_ARCH-pc-mingw64 --enable-core-inline --disable-mt32 --disable-libfluidsynth --disable-libslirp --enable-d3d9 --enable-d3d-shaders  --prefix=/usr
+          ./configure --host=$MINGW_ARCH-w32-mingw64 --enable-core-inline --disable-mt32 --disable-libfluidsynth --disable-libslirp --enable-d3d9 --enable-d3d-shaders  --prefix=/usr
           make -j3
+      - name: up
+        if: steps.l.outcome == 'failure'
+        uses: actions/upload-artifact@v2
+        with:
+          path: config.log
+      - name: die
+        if: steps.l.outcome == 'failure'
+        run: exit 254
+      #debug end---
       - name: Compile DOSBox-X (SDL2)
         if: matrix.type == 'sdl2'
         run: |
           chmod +x configure
           # FIXME: MinGW builds should enable the debugger eventually
-          ./configure --enable-core-inline --enable-d3d9 --host=$MINGW_ARCH-pc-mingw64 --enable-d3d-shaders --enable-sdl2 --prefix=/usr
+          ./configure --enable-core-inline --enable-d3d9 --host=$MINGW_ARCH-w32-mingw64 --enable-d3d-shaders --enable-sdl2 --prefix=/usr
           make -j3
       - name: Prepare artifact
         run: |
