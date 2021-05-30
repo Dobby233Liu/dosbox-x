@@ -74,11 +74,13 @@ jobs:
           fi
           echo "MINGW_ARCH=$MINGW_ARCH" >> $GITHUB_ENV
           echo "CC=$MINGW_ARCH-w64-mingw32-gcc" >> $GITHUB_ENV
-          echo "CPP=$MINGW_ARCH-w64-mingw32-g++" >> $GITHUB_ENV
+          echo "CPP=$MINGW_ARCH-w64-mingw32-cpp" >> $GITHUB_ENV
           echo "CXX=$MINGW_ARCH-w64-mingw32-g++" >> $GITHUB_ENV
       - run: ./autogen.sh
         name: Autoregen
       - name: Compile SDL1
+      #debug---
+        continue-on-error: true
         if: matrix.type != 'sdl2'
         run: |
           chmod +x vs2015/sdl/build-scripts/strip_fPIC.sh
@@ -86,6 +88,13 @@ jobs:
           ./build-dosbox.sh
           cd $GITHUB_WORKSPACE/vs2015/sdlnet
           ./build-dosbox.sh
+      - name: log
+        uses: actions/upload-artifacts@v2
+        with:
+          path: vs2015/sdl/config.log
+      - name: die
+        run: exit 255
+      #---
       - name: Compile SDL2
         if: matrix.type == 'sdl2'
         run: |
