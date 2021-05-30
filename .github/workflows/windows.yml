@@ -3,7 +3,7 @@ on: [push, pull_request] # TODO: release [released, prereleased]
 
 jobs:
   vsbuild:
-    name: Build using VS
+    name: Build using Visual Studio
     runs-on: windows-latest # this image currently has VS2019, but may change in any time
 
     strategy:
@@ -48,127 +48,38 @@ jobs:
           path:
             bin/${{ matrix.arch }}/${{ matrix.type }}
   mingw:
-    name: MinGW-w64 build
-    runs-on: ubuntu-latest
+    name: Build with MSYS2
+    runs-on: windows-latest
     
     strategy:
       matrix:
-        prefix: [x86-64, i686]
-        type: ["", sdl2, lowend, sdldraw]
+        shell: [32, 64]
+        type: ["", -sdl2, -lowend, -sdldraw]
       fail-fast: false
+      
+    defaults:
+      run:
+        # https://github.com/actions/runner/issues/497
+        shell: C:\msys64\mingw${{ matrix.shell }}.exe --noprofile --norc -e -o pipefail {0}
     env:
-      ZIP_NAME: dosbox-x-mingw-${{ matrix.prefix }}-${{ matrix.type }}.zip
+      ZIP_NAME: dosbox-x-mingw-win${{ matrix.shell }}${{ matrix.type }}.zip
       
     steps:
       - uses: actions/checkout@v2
         name: Checkout repo
+      # If we were going to using Git Bash...
+      # (we use the included msys2 there, see top)
+      #- uses: git-for-windows/setup-git-for-windows-sdk@master
+      #  name: Download envorinment
+      #  with:
+      #    flavor: full # full MSYS2 envorinment
+      #    architecture: ${{ matrix.arch }}
+      #    verbose: false
       - run: perl update-build-timestamp.pl
         name: Update build timestamp
-      - run: sudo apt install -y gcc-mingw-w64-${{ matrix.prefix }} g++-mingw-w64-${{ matrix.prefix }} libslirp-dev pkg-config zlib1g-dev zlibc
-        name: Install dependecines
-      - name: MINGW_ARCH hack
-        env:
-           MINGW_ARCH: ${{ matrix.prefix }}
-        run: |
-          export MINGW_ARCH_A=$MINGW_ARCH
-          if [ $MINGW_ARCH == "x86-64" ]
-          then
-          export MINGW_ARCH_A=x86_64
-          fi
-          echo "MINGW_ARCH=$MINGW_ARCH_A" >> $GITHUB_ENV
-      - run: ./autogen.sh
-        name: Autoregen
-      - name: Compile SDL1
-        if: matrix.type != 'sdl2'
-        run: |
-          chmod +x vs2015/sdl/build-scripts/strip_fPIC.sh
-          cd vs2015/sdl
-          ./build-dosbox.sh
-          cd $GITHUB_WORKSPACE/vs2015/sdlnet
-          ./build-dosbox.sh
-      - name: Compile SDL2
-        if: matrix.type == 'sdl2'
-        run: |
-          chmod +x vs2015/sdl/build-scripts/strip_fPIC.sh
-          cd vs2015/sdl2
-          ./build-dosbox.sh
-          cd $GITHUB_WORKSPACE/vs2015/sdlnet
-          ./build-dosbox.sh
-      - name: Compile deps
-        run: |
-          cd $GITHUB_WORKSPACE/vs2015/libpng
-          ./build-dosbox.sh
-          top=$GITHUB_WORKSPACE
-          new="-I$top/vs2015/libpng/linux-host/include "
-          nld="-L$top/vs2015/libpng/linux-host/lib "
-          export CFLAGS="$new$CFLAGS"
-          export LDFLAGS="$nld$LDFLAGS"
-          export CPPFLAGS="$new$CPPFLAGS"
-          export CXXFLAGS="$new$CXXFLAGS"
-          echo "CFLAGS=$CFLAGS" >> $GITHUB_ENV
-          echo "CPPFLAGS=$CPPFLAGS" >> $GITHUB_ENV
-          echo "CXXFLAGS=$CXXFLAGS" >> $GITHUB_ENV
-          echo "LDFLAGS=$LDFLAGS" >> $GITHUB_ENV
-          cd $GITHUB_WORKSPACE/vs2015/freetype
-          ./build-dosbox.sh
-          new="-I$top/vs2015/freetype/linux-host/include/freetype2 "
-          nld="-L$top/vs2015/freetype/linux-host/lib -lfreetype "
-          export CFLAGS="$new$CFLAGS"
-          export LDFLAGS="$nld$LDFLAGS"
-          export CPPFLAGS="$new$CPPFLAGS"
-          export CXXFLAGS="$new$CXXFLAGS"
-          export INTERNAL_FREETYPE=1
-          echo "CFLAGS=$CFLAGS" >> $GITHUB_ENV
-          echo "CPPFLAGS=$CPPFLAGS" >> $GITHUB_ENV
-          echo "CXXFLAGS=$CXXFLAGS" >> $GITHUB_ENV
-          echo "LDFLAGS=$LDFLAGS" >> $GITHUB_ENV
-          echo "INTERNAL_FREETYPE=1" >> $GITHUB_ENV
-      - name: Setup MinGW
-        run: |
-          echo "CC=$MINGW_ARCH-w64-mingw32-gcc" >> $GITHUB_ENV
-          echo "CPP=$MINGW_ARCH-w64-mingw32-cpp" >> $GITHUB_ENV
-          echo "CXX=$MINGW_ARCH-w64-mingw32-g++" >> $GITHUB_ENV
-      - name: Compile DOSBox-X
-        if: matrix.type == ''
-        run: |
-          chmod +x configure
-          # FIXME: MinGW builds should enable the debugger eventually
-          ./configure --host=$MINGW_ARCH-w32-mingw64 --enable-core-inline --enable-d3d9 --enable-d3d-shaders --prefix=/usr
-          make -j3
-      - name: Compile DOSBox-X (sdldraw)
-        if: matrix.type == 'sdldraw'
-        run: |
-          chmod +x configure
-          # FIXME: MinGW builds should enable the debugger eventually
-          ./configure --host=$MINGW_ARCH-w32-mingw64 --enable-core-inline --enable-force-menu-sdldraw --enable-d3d9 --enable-d3d-shaders --prefix=/usr
-          make -j3
-      #debug start--
-      - name: Compile DOSBox-X (lowend)
-        if: matrix.type == 'lowend'
-        id: l
-        continue-on-error: true
-        run: |
-          chmod +x configure
-          # FIXME: MinGW builds should enable the debugger eventually
-          ./configure --host=$MINGW_ARCH-w32-mingw64 --enable-core-inline --disable-mt32 --disable-libfluidsynth --disable-libslirp --enable-d3d9 --enable-d3d-shaders  --prefix=/usr
-          make -j3
-      - name: up
-        if: steps.l.outcome == 'failure'
-        uses: actions/upload-artifact@v2
-        with:
-          path: config.log
-      - name: die
-        if: steps.l.outcome == 'failure'
-        run: exit 254
-      #debug end---
-      - name: Compile DOSBox-X (SDL2)
-        if: matrix.type == 'sdl2'
-        run: |
-          chmod +x configure
-          # FIXME: MinGW builds should enable the debugger eventually
-          ./configure --enable-core-inline --enable-d3d9 --host=$MINGW_ARCH-w32-mingw64 --enable-d3d-shaders --enable-sdl2 --prefix=/usr
-          make -j3
-      - name: Prepare artifact
+      - name: Build using script
+        run: ./build-mingw${{ matrix.type }}
+      - name: Pack zip
         run: |
           strip src/dosbox-x.exe
           mkdir -p build
@@ -176,8 +87,8 @@ jobs:
           cp CHANGELOG build/CHANGELOG.txt
           cp dosbox-x.reference.conf build/dosbox-x.reference.conf
           cp dosbox-x.reference.full.conf build/dosbox-x.reference.full.conf
-      - name: Upload artifacts
+      - name: Upload build
         uses: actions/upload-artifact@v2
         with:
-          name: mingw-${{ matrix.prefix }}-${{ matrix.type }}
+          name: win${{ matrix.shell }}${{ matrix.type }}
           path: build
