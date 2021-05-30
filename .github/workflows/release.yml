@@ -1,0 +1,79 @@
+on:
+  push:
+    tags:
+      - "dosbox-x-v*"
+
+name: Create Release from tag
+
+jobs:
+  create_release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      # FIXME: evaluate something else
+      - name: Generate release name from headers
+        id: header
+        run: |
+          echo "#include<stdio.h>">a.c
+          echo "#include \"vs2015/config_package.h\"">>a.c
+          echo "int main(){">>a.c
+          echo "printf(\"::set-output name=version::\" VERSION \"\\n\");">>a.c
+          echo "return 0;">>a.c
+          echo "}">>a.c
+          gcc -o version a.c
+          ./version
+      # FIXME: python
+      - env:
+          DOSBOX_VERSION: ${{ steps.header.outputs.version }}
+          SIMPLE_TAG: ${{ github.sha }}
+        run: |
+          import os
+          SITE = "https://dosbox-x.com"
+          WIKI_LOC = SITE + "/wiki"
+          CHANGELOG_URL = SITE + "/release-" + os.environ["DOSBOX_VERSION"] + ".html"
+          INSTALL_PAGE = "https://github.com/joncampbell123/dosbox-x/blob/" + os.environ["SIMPLE_TAG"] + "/INSTALL.md"
+
+          with open("CHANGELOG.md", "w", encoding="utf-8") as desc:
+            desc.write("Note: Installation instructions are available from the [INSTALL](%s) page. Also, always check out the [DOSBox-X homepage](%s) for latest updates.\n\n" % (INSTALL_PAGE, SITE))
+            desc.write("You can also see the release notes [here](%s) and the user guide here: [DOSBox-X Wiki](%s)\n\n" % (CHANGELOG_URL, WIKI_LOC))
+            with open("CHANGELOG", "r", encoding="utf-8") as changelog:
+              def line_iterator(f):
+                line = True
+                while line:
+                  line = f.readline()
+                  yield line
+                return
+              it = line_iterator(changelog)
+              next(it) # skip version
+              for line in it:
+                if line == "\r\n" or not line.startswith("  "):
+                  break
+                print(line, file=desc, end='')
+        name: Generate release body
+        shell: python
+      - run: cat CHANGELOG.md
+        name: Check release body
+      - name: Create Release
+        id: release
+        continue-on-error: true
+        uses: actions/create-release@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: DOSBox-X ${{ steps.header.outputs.version }} ${{ github.event.head_commit.timestamp }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+      # FIXME: is it needed?
+      - name: Update existing release if already exists
+        uses: tubone24/update_release@master
+        if: steps.release.outcome == 'failure'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: DOSBox-X ${{ steps.header.outputs.version }} ${{ github.event.head_commit.timestamp }}
+          body_path: CHANGELOG.md
