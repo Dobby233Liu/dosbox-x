@@ -5,8 +5,8 @@ jobs:
     name: Build for VS
     runs-on: windows-latest # this image currently has VS2019, but may change in any time
 
-    matrix:
-      strategy:
+    strategy:
+      matrix:
         arch: [Win32, x64, ARM32, ARM64]
         type: [Release, "Release SDL2"]
       # TODO: use python powershell or perl to convert to zip name later???
