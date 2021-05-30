@@ -51,7 +51,7 @@ jobs:
     
     strategy:
       matrix:
-        prefix: [x86-64, x86]
+        prefix: [x86-64, i686]
         type: ["", sdl2, lowend, sdldraw]
     env:
       ZIP_NAME: dosbox-x-mingw-${{ matrix.prefix }}-${{ matrix.type }}.zip
@@ -61,7 +61,7 @@ jobs:
         name: Checkout repo
       - run: perl update-build-timestamp.pl
         name: Update build timestamp
-      - run: sudo apt install -y gcc-mingw-w64-${{ matrix.prefix }} libslirp-dev pkg-config zlib1g-dev zlibc
+      - run: sudo apt install -y gcc-mingw-w64-${{ matrix.prefix }} g++-mingw-w64-${{ matrix.prefix }} libslirp-dev pkg-config zlib1g-dev zlibc
         name: Install dependecines
       - run: ./autogen.sh
         name: Autoregen
