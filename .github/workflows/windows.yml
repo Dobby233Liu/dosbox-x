@@ -66,16 +66,17 @@ jobs:
       - run: sudo apt install -y gcc-mingw-w64-${{ matrix.prefix }} g++-mingw-w64-${{ matrix.prefix }} libslirp-dev pkg-config zlib1g-dev zlibc
         name: Install dependecines
       - name: MINGW_ARCH hack
+        env:
+           MINGW_ARCH: ${{ matrix.prefix }}
         run: |
-          export MINGW_ARCH=${{ matrix.prefix }}
-          if [ $MINGW_ARCH -eq "x86-64" ]
-          then
-          export MINGW_ARCH="x86_64"
+          export MINGW_ARCH_A=$MINGW_ARCH
+          if [ $MINGW_ARCH -eq "x86-64" ] then
+          export MINGW_ARCH_A="x86_64"
           fi
-          echo "MINGW_ARCH=$MINGW_ARCH" >> $GITHUB_ENV
-          echo "CC=$MINGW_ARCH-w64-mingw32-gcc" >> $GITHUB_ENV
-          echo "CPP=$MINGW_ARCH-w64-mingw32-cpp" >> $GITHUB_ENV
-          echo "CXX=$MINGW_ARCH-w64-mingw32-g++" >> $GITHUB_ENV
+          echo "MINGW_ARCH=$MINGW_ARCH_A" >> $GITHUB_ENV
+          echo "CC=$MINGW_ARCH_A-w64-mingw32-gcc" >> $GITHUB_ENV
+          echo "CPP=$MINGW_ARCH_A-w64-mingw32-cpp" >> $GITHUB_ENV
+          echo "CXX=$MINGW_ARCH_A-w64-mingw32-g++" >> $GITHUB_ENV
       - run: ./autogen.sh
         name: Autoregen
       - name: Compile SDL1
