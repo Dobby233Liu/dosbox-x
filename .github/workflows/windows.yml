@@ -70,8 +70,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         name: Checkout repo
-      - run: where bash && exit 255
-        shell: cmd # debug
       # If we were going to using Git Bash...
       #- uses: git-for-windows/setup-git-for-windows-sdk@master
       #  name: Download envorinment
