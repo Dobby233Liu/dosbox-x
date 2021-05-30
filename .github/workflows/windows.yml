@@ -105,10 +105,10 @@ jobs:
           export LDFLAGS="$nld$LDFLAGS"
           export CPPFLAGS="$new$CPPFLAGS"
           export CXXFLAGS="$new$CXXFLAGS"
-          echo "CFLAGS=\"$CFLAGS\"" >> $GITHUB_ENV
-          echo "CPPFLAGS=\"$CPPFLAGS\"" >> $GITHUB_ENV
-          echo "CXXFLAGS=\"$CXXFLAGS\"" >> $GITHUB_ENV
-          echo "LDFLAGS=\"$LDFLAGS\"" >> $GITHUB_ENV
+          echo "CFLAGS=$CFLAGS" >> $GITHUB_ENV
+          echo "CPPFLAGS=$CPPFLAGS" >> $GITHUB_ENV
+          echo "CXXFLAGS=$CXXFLAGS" >> $GITHUB_ENV
+          echo "LDFLAGS=$LDFLAGS" >> $GITHUB_ENV
           cd $GITHUB_WORKSPACE/vs2015/freetype
           ./build-dosbox.sh
           new="-I$top/vs2015/freetype/linux-host/include/freetype2 "
@@ -118,10 +118,10 @@ jobs:
           export CPPFLAGS="$new$CPPFLAGS"
           export CXXFLAGS="$new$CXXFLAGS"
           export INTERNAL_FREETYPE=1
-          echo "CFLAGS=\"$CFLAGS\"" >> $GITHUB_ENV
-          echo "CPPFLAGS=\"$CPPFLAGS\"" >> $GITHUB_ENV
-          echo "CXXFLAGS=\"$CXXFLAGS\"" >> $GITHUB_ENV
-          echo "LDFLAGS=\"$LDFLAGS\"" >> $GITHUB_ENV
+          echo "CFLAGS=$CFLAGS" >> $GITHUB_ENV
+          echo "CPPFLAGS=$CPPFLAGS" >> $GITHUB_ENV
+          echo "CXXFLAGS=$CXXFLAGS" >> $GITHUB_ENV
+          echo "LDFLAGS=$LDFLAGS" >> $GITHUB_ENV
           echo "INTERNAL_FREETYPE=1" >> $GITHUB_ENV
       - name: Setup MinGW
         run: |
