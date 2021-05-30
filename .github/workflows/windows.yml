@@ -79,36 +79,25 @@ jobs:
       - run: ./autogen.sh
         name: Autoregen
       - name: Compile SDL1
-      #debug---
-        continue-on-error: true
         if: matrix.type != 'sdl2'
         run: |
           chmod +x vs2015/sdl/build-scripts/strip_fPIC.sh
           cd vs2015/sdl
-          ./build-dosbox.sh
+          ./build-dosbox.sh --host=$MINGW_ARCH-w64-mingw32
           cd $GITHUB_WORKSPACE/vs2015/sdlnet
-          ./build-dosbox.sh
-      - name: log
-        uses: actions/upload-artifact@v2
-        if: matrix.type != 'sdl2'
-        with:
-          path: vs2015/sdl/config.log
-      - name: die
-        if: matrix.type != 'sdl2'
-        run: exit 255
-      #---
+          ./build-dosbox.sh --host=$MINGW_ARCH-w64-mingw32
       - name: Compile SDL2
         if: matrix.type == 'sdl2'
         run: |
           chmod +x vs2015/sdl/build-scripts/strip_fPIC.sh
           cd vs2015/sdl2
-          ./build-dosbox.sh
+          ./build-dosbox.sh --host=$MINGW_ARCH-w64-mingw32
           cd $GITHUB_WORKSPACE/vs2015/sdlnet
-          ./build-dosbox.sh
+          ./build-dosbox.sh --host=$MINGW_ARCH-w64-mingw32
       - name: Compile deps
         run: |
           cd $GITHUB_WORKSPACE/vs2015/libpng
-          ./build-dosbox.sh
+          ./build-dosbox.sh --host=$MINGW_ARCH-w64-mingw32
           top=$GITHUB_WORKSPACE
           new="-I$top/vs2015/libpng/linux-host/include "
           nld="-L$top/vs2015/libpng/linux-host/lib "
@@ -121,7 +110,7 @@ jobs:
           echo "CXXFLAGS=\"$CXXFLAGS\"" >> $GITHUB_ENV
           echo "LDFLAGS=\"$LDFLAGS\"" >> $GITHUB_ENV
           cd $GITHUB_WORKSPACE/vs2015/freetype
-          ./build-dosbox.sh
+          ./build-dosbox.sh --host=$MINGW_ARCH-w64-mingw32
           new="-I$top/vs2015/freetype/linux-host/include/freetype2 "
           nld="-L$top/vs2015/freetype/linux-host/lib -lfreetype "
           export CFLAGS="$new$CFLAGS"
@@ -139,28 +128,28 @@ jobs:
         run: |
           chmod +x configure
           # FIXME: MinGW builds should enable the debugger eventually
-          ./configure --target=$MINGW_ARCH-w64-mingw32 --host=$MINGW_ARCH-w64-mingw32 --enable-core-inline --enable-d3d9 --enable-d3d-shaders --prefix=/usr
+          ./configure --host=$MINGW_ARCH-w64-mingw32 --enable-core-inline --enable-d3d9 --enable-d3d-shaders --prefix=/usr
           make -j
       - name: Compile DOSBox-X (sdldraw)
         if: matrix.type == 'sdldraw'
         run: |
           chmod +x configure
           # FIXME: MinGW builds should enable the debugger eventually
-          ./configure --target=$MINGW_ARCH-w64-mingw32 --host=$MINGW_ARCH-w64-mingw32 --enable-core-inline --enable-force-menu-sdldraw --enable-d3d9 --enable-d3d-shaders --prefix=/usr
+          ./configure --host=$MINGW_ARCH-w64-mingw32 --enable-core-inline --enable-force-menu-sdldraw --enable-d3d9 --enable-d3d-shaders --prefix=/usr
           make -j
       - name: Compile DOSBox-X (lowend)
         if: matrix.type == 'lowend'
         run: |
           chmod +x configure
           # FIXME: MinGW builds should enable the debugger eventually
-          ./configure --target=$MINGW_ARCH-w64-mingw32 --host=$MINGW_ARCH-w64-mingw32 --enable-core-inline --disable-mt32 --disable-libfluidsynth --disable-libslirp --enable-d3d9 --enable-d3d-shaders  --prefix=/usr
+          ./configure --host=$MINGW_ARCH-w64-mingw32 --enable-core-inline --disable-mt32 --disable-libfluidsynth --disable-libslirp --enable-d3d9 --enable-d3d-shaders  --prefix=/usr
           make -j
       - name: Compile DOSBox-X (SDL2)
         if: matrix.type == 'sdl2'
         run: |
           chmod +x configure
           # FIXME: MinGW builds should enable the debugger eventually
-          ./configure --enable-core-inline --enable-d3d9 --host=$MINGW_ARCH-w64-mingw32 --enable-d3d-shaders --target=$MINGW_ARCH-w64-mingw32 --enable-sdl2 --prefix=/usr
+          ./configure --enable-core-inline --enable-d3d9 --host=$MINGW_ARCH-w64-mingw32 --enable-d3d-shaders --enable-sdl2 --prefix=/usr
           make -j
       - name: Prepare artifact
         run: |
