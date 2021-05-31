@@ -4,7 +4,7 @@ on: [push, pull_request] # TODO: release [released, prereleased]
 jobs:
   vsbuild:
     name: Build with Visual Studio
-    runs-on: windows-latest # this image currently has VS2019, but may change in any time
+    runs-on: windows-latest # this image currently has VS2019, but that may change anytime
 
     strategy:
       matrix:
@@ -170,10 +170,12 @@ jobs:
           {
             $orig = $orig_prefix + $arch[$arch_i]
             $dest = $dest_prefix + $arch_conv[$arch_i]
+            $_orig = $orig
+            $_dest = $dest
             for ($sub_i = 0; $sub_i -lt $sub.count; $sub_i++)
             {
-              $orig = $orig + $sub[$sub_i]
-              $dest = $dest + $sub_conv[$sub_i]
+              $orig = $_orig + $sub[$sub_i]
+              $dest = $_dest + $sub_conv[$sub_i]
               Write-Host "$orig -> $dest"
               mkdir -Force $dest
               $copy_what = @("dosbox-x.exe", "dosbox-x.reference.conf", "dosbox-x.reference.full.conf")
@@ -201,10 +203,12 @@ jobs:
           {
             $orig = $orig_prefix + $arch[$arch_i]
             $dest = $dest_prefix + $arch_conv[$arch_i]
+            $_orig = $orig
+            $_dest = $dest
             for ($sub_i = 0; $sub_i -lt $sub.count; $sub_i++)
             {
-              $orig = $orig + $sub[$sub_i]
-              $dest = $dest + $sub[$sub_i]
+              $orig = $_orig + $sub[$sub_i]
+              $dest = $_dest + $sub[$sub_i]
               Write-Host "$orig -> $dest"
               mkdir -Force $dest
               $copy_what = @("dosbox-x.exe", "dosbox-x.reference.conf", "dosbox-x.reference.full.conf")
