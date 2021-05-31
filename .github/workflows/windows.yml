@@ -17,6 +17,11 @@ jobs:
       - run: perl update-build-timestamp.pl
         name: Update build timestamp
       - uses: microsoft/setup-msbuild@c26a08ba26249b81327e26f6ef381897b6a8754d # commithash because 1.0.2
+        name: Init MSBuild
+      - name: Cache IPDBs
+        uses: actions/cache@v2
+        with:
+          key: vs-${{ matrix.arch }}-${{ matrix.type }}-buildcache
       - name: Build
         working-directory: vs2015
         env:
@@ -25,9 +30,6 @@ jobs:
         run: |
           msbuild dosbox-x.sln /p:Configuration=$env:GH_BUILD_TYPE /p:Platform=$env:GH_BUILD_ARCH
           cd "../bin/${{ matrix.arch }}/${{ matrix.type }}"
-          del dosbox-x.exp
-          del dosbox-x.lib
-          del dosbox-x.pdb
       - name: Internally decide artifact name
         id: zipname
         env:
@@ -45,7 +47,11 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: vs-${{ steps.zipname.outputs.zipname-sub }}
-          path: bin/${{ matrix.arch }}/${{ matrix.type }}
+          path: |
+            bin/${{ matrix.arch }}/${{ matrix.type }}
+            !bin/${{ matrix.arch }}/${{ matrix.type }}/*.exp
+            !bin/${{ matrix.arch }}/${{ matrix.type }}/*.lib
+            !bin/${{ matrix.arch }}/${{ matrix.type }}/*.pdb
   mingw:
     name: Build with MSYS2
     runs-on: windows-latest
@@ -121,7 +127,7 @@ jobs:
     
     env:
       SETUP_DIR: ${{ github.workspace }}\contrib\windows\installer
-      ROOT_DIRECTORY: ${{ github.workplace }}
+      ROOT_DIRECTORY: ${{ github.workspace }}
       
     steps:
       - name: Checkout
@@ -155,7 +161,7 @@ jobs:
           for ($arch_i = 0; $arch_i -lt $arch.count; $arch_i++)
           {
             $orig = $orig_prefix + $arch[$arch_i]
-            $dest = $orig_prefix + $arch_conv[$arch_i]
+            $dest = $dest_prefix + $arch_conv[$arch_i]
             for ($sub_i = 0; $sub_i -lt $sub.count; $sub_i++)
             {
               $orig = $orig + $sub[$sub_i]
@@ -186,7 +192,7 @@ jobs:
           for ($arch_i = 0; $arch_i -lt $arch.count; $arch_i++)
           {
             $orig = $orig_prefix + $arch[$arch_i]
-            $dest = $orig_prefix + $arch_conv[$arch_i]
+            $dest = $dest_prefix + $arch_conv[$arch_i]
             for ($sub_i = 0; $sub_i -lt $sub.count; $sub_i++)
             {
               $orig = $orig + $sub[$sub_i]
