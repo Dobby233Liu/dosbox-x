@@ -113,3 +113,107 @@ jobs:
         with:
           name: mingw-win${{ matrix.arch }}${{ matrix.type }}
           path: _build
+  installer: # (Wengier)
+    name: Build Inno Setup installer
+    runs-on: windows-latest
+
+    needs: [vsbuild, mingw] # sources
+    
+    env:
+      SETUP_DIR: ${{ github.workspace }}\contrib\windows\installer
+      ROOT_DIRECTORY: ${{ github.workplace }}
+      
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      # FIXME: use external build
+      - name: Intergrity check
+        working-directory: ${{ env.SETUP_DIR }}
+        run: |
+          if ( -Not (Test-Path "ISCC.exe") )
+          {
+            Write-Host "::error ::Inno Setup Compiler is not found in $env:SETUP_DIR."
+            exit 1
+          }
+      - name: Download builds
+        uses: actions/download-artifact@v2
+        
+      - name: Prepare directories
+        working-directory: ${{ env.SETUP_DIR }}
+        run: |
+          mkdir Win32_builds
+          mkdir Win64_builds
+      - name: Prepare directories (VS)
+        working-directory: ${{ env.SETUP_DIR }}
+        run: |
+          $orig_prefix = "$env:ROOT_DIRECTORY\vs-"
+          $dest_prefix = "$env:SETUP_DIR\"
+          $arch = @("win32","x64","arm","arm64")
+          $arch_conv = @("Win32_builds\x86_Release","Win64_builds\x64_Release","Win32_builds\ARM_Release","Win64_builds\ARM64_Release")
+          $sub = @("","-sdl2")
+          $sub_conv = @("","_SDL2")
+          for ($arch_i = 0; $arch_i -lt $arch.count; $arch_i++)
+          {
+            $orig = $orig_prefix + $arch[$arch_i]
+            $dest = $orig_prefix + $arch_conv[$arch_i]
+            for ($sub_i = 0; $sub_i -lt $sub.count; $sub_i++)
+            {
+              $orig = $orig + $sub[$sub_i]
+              $dest = $dest + $sub_conv[$sub_i]
+              {
+                Write-Host "$orig -> $dest"
+                mkdir -Force $dest
+                $copy_what = @("dosbox-x.exe", "dosbox-x.reference.conf", "dosbox-x.reference.full.conf")
+                foreach ($file in $copy_what)
+                {
+                  copy "$orig\$file" "$dest\$file"
+                }
+                ./unix2dos.exe $dest\dosbox-x.reference.conf
+                ./unix2dos.exe $dest\dosbox-x.reference.full.conf
+                if (($arch[$arch_i] -eq "win32") -or ($arch[$arch_i] -eq "x64"))
+                {
+                  ./PatchPE.exe $dest\dosbox-x.exe
+                }
+              }
+            }
+          }
+      - name: Prepare directories (MinGW)
+        working-directory: ${{ env.SETUP_DIR }}
+        run: |
+          $orig_prefix = "$env:ROOT_DIRECTORY\mingw-"
+          $dest_prefix = "$env:SETUP_DIR\"
+          $arch = @("win32","win64")
+          $arch_conv = @("Win32_builds\mingw","Win64_builds\mingw")
+          $sub = @("","-lowend","-sdldraw","-sdl2")
+          for ($arch_i = 0; $arch_i -lt $arch.count; $arch_i++)
+          {
+            $orig = $orig_prefix + $arch[$arch_i]
+            $dest = $orig_prefix + $arch_conv[$arch_i]
+            for ($sub_i = 0; $sub_i -lt $sub.count; $sub_i++)
+            {
+              $orig = $orig + $sub[$sub_i]
+              $dest = $dest + $sub[$sub_i]
+              {
+                Write-Host "$orig -> $dest"
+                mkdir -Force $dest
+                $copy_what = @("dosbox-x.exe", "dosbox-x.reference.conf", "dosbox-x.reference.full.conf")
+                foreach ($file in $copy_what)
+                {
+                  copy "$orig\$file" "$dest\$file"
+                }
+                ./unix2dos.exe $dest\dosbox-x.reference.conf
+                ./unix2dos.exe $dest\dosbox-x.reference.full.conf
+              }
+            }
+          }
+      - name: Check strucute
+        run: tree ${{ env.SETUP_DIR }}
+
+      - name: Build installer
+        working-directory: ${{ env.SETUP_DIR }}
+        run: ./ISCC.exe /F setup.exe DOSBox-X-setup.iss
+      - name: Upload installer
+        uses: actions/upload-artifact@v2
+        with:
+          name: setup
+          path: ${{ env.SETUP_DIR }}\setup.exe
