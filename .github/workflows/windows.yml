@@ -14,14 +14,21 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         name: Checkout repo
+        
       - run: perl update-build-timestamp.pl
         name: Update build timestamp
+        
       - uses: microsoft/setup-msbuild@c26a08ba26249b81327e26f6ef381897b6a8754d # commithash because 1.0.2
         name: Init MSBuild
+        
       - name: Cache IPDBs
         uses: actions/cache@v2
         with:
           key: vs-${{ matrix.arch }}-${{ matrix.type }}-buildcache
+          path: |
+            bin/${{ matrix.arch }}/${{ matrix.type }}/*.exp
+            bin/${{ matrix.arch }}/${{ matrix.type }}/*.lib
+            bin/${{ matrix.arch }}/${{ matrix.type }}/*.pdb
       - name: Build
         working-directory: vs2015
         env:
@@ -30,6 +37,7 @@ jobs:
         run: |
           msbuild dosbox-x.sln /p:Configuration=$env:GH_BUILD_TYPE /p:Platform=$env:GH_BUILD_ARCH
           cd "../bin/${{ matrix.arch }}/${{ matrix.type }}"
+          
       - name: Internally decide artifact name
         id: zipname
         env:
