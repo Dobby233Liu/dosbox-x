@@ -223,8 +223,8 @@ jobs:
       - name: Copy configs
         working-directory: ${{ env.SETUP_DIR }}
         run: |
-          copy $ROOT_DIRECTORY\dosbox-x.reference.conf dosbox-x.reference.conf
-          copy $ROOT_DIRECTORY\dosbox-x.reference.full.conf dosbox-x.reference.full.conf
+          copy $env:ROOT_DIRECTORY\dosbox-x.reference.conf dosbox-x.reference.conf
+          copy $env:ROOT_DIRECTORY\dosbox-x.reference.full.conf dosbox-x.reference.full.conf
           ./unix2dos.exe dosbox-x.reference.conf
           ./unix2dos.exe dosbox-x.reference.full.conf
       - name: Check strucute
