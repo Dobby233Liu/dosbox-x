@@ -89,9 +89,8 @@ jobs:
           install: >-
             base
             base-devel
-            libraries
-            development
             mingw-w64-i686-toolchain
+            mingw-w64-i686-libpng
       - uses: msys2/setup-msys2@v2
         name: Setup MSYS2 [x86_64]
         if: matrix.arch == '64'
@@ -101,9 +100,14 @@ jobs:
           install: >-
             base
             base-devel
-            libraries
-            development
             mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-libpng
+      - name: Install SDL2 [32]
+        if: matrix.arch == '32' && matrix.type == "-sdl2"
+        run: pacman -S mingw-w64-i686-SDL2
+      - name: Install SDL2 [64]
+        if: matrix.arch == '64' && matrix.type == "-sdl2"
+        run: pacman -S mingw-w64-x86_64-SDL2
         
       - uses: actions/checkout@v2
         name: Checkout repo
