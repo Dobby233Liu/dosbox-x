@@ -103,10 +103,10 @@ jobs:
             mingw-w64-x86_64-toolchain
             mingw-w64-x86_64-libpng
       - name: Install SDL2 [32]
-        if: matrix.arch == '32' && matrix.type == "-sdl2"
+        if: matrix.arch == '32' && matrix.type == '-sdl2'
         run: pacman -S mingw-w64-i686-SDL2
       - name: Install SDL2 [64]
-        if: matrix.arch == '64' && matrix.type == "-sdl2"
+        if: matrix.arch == '64' && matrix.type == '-sdl2'
         run: pacman -S mingw-w64-x86_64-SDL2
         
       - uses: actions/checkout@v2
