@@ -230,12 +230,10 @@ jobs:
           copy $env:ROOT_DIRECTORY\dosbox-x.reference.full.conf dosbox-x.reference.full.conf
           ./unix2dos.exe dosbox-x.reference.conf
           ./unix2dos.exe dosbox-x.reference.full.conf
-      - name: Check strucute
-        run: tree ${{ env.SETUP_DIR }}
 
       - name: Build installer
         working-directory: ${{ env.SETUP_DIR }}
-        run: ./ISCC.exe /F"setup.exe" DOSBox-X-setup.iss
+        run: ./ISCC.exe /F"setup" DOSBox-X-setup.iss
       - name: Upload installer
         uses: actions/upload-artifact@v2
         with:
