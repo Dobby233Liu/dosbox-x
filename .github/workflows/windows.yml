@@ -160,20 +160,18 @@ jobs:
             {
               $orig = $orig + $sub[$sub_i]
               $dest = $dest + $sub_conv[$sub_i]
+              Write-Host "$orig -> $dest"
+              mkdir -Force $dest
+              $copy_what = @("dosbox-x.exe", "dosbox-x.reference.conf", "dosbox-x.reference.full.conf")
+              foreach ($file in $copy_what)
               {
-                Write-Host "$orig -> $dest"
-                mkdir -Force $dest
-                $copy_what = @("dosbox-x.exe", "dosbox-x.reference.conf", "dosbox-x.reference.full.conf")
-                foreach ($file in $copy_what)
-                {
-                  copy "$orig\$file" "$dest\$file"
-                }
-                ./unix2dos.exe $dest\dosbox-x.reference.conf
-                ./unix2dos.exe $dest\dosbox-x.reference.full.conf
-                if (($arch[$arch_i] -eq "win32") -or ($arch[$arch_i] -eq "x64"))
-                {
-                  ./PatchPE.exe $dest\dosbox-x.exe
-                }
+                copy "$orig\$file" "$dest\$file"
+              }
+              ./unix2dos.exe $dest\dosbox-x.reference.conf
+              ./unix2dos.exe $dest\dosbox-x.reference.full.conf
+              if (($arch[$arch_i] -eq "win32") -or ($arch[$arch_i] -eq "x64"))
+              {
+                ./PatchPE.exe $dest\dosbox-x.exe
               }
             }
           }
@@ -193,17 +191,15 @@ jobs:
             {
               $orig = $orig + $sub[$sub_i]
               $dest = $dest + $sub[$sub_i]
+              Write-Host "$orig -> $dest"
+              mkdir -Force $dest
+              $copy_what = @("dosbox-x.exe", "dosbox-x.reference.conf", "dosbox-x.reference.full.conf")
+              foreach ($file in $copy_what)
               {
-                Write-Host "$orig -> $dest"
-                mkdir -Force $dest
-                $copy_what = @("dosbox-x.exe", "dosbox-x.reference.conf", "dosbox-x.reference.full.conf")
-                foreach ($file in $copy_what)
-                {
-                  copy "$orig\$file" "$dest\$file"
-                }
-                ./unix2dos.exe $dest\dosbox-x.reference.conf
-                ./unix2dos.exe $dest\dosbox-x.reference.full.conf
+                copy "$orig\$file" "$dest\$file"
               }
+              ./unix2dos.exe $dest\dosbox-x.reference.conf
+              ./unix2dos.exe $dest\dosbox-x.reference.full.conf
             }
           }
       - name: Check strucute
@@ -211,7 +207,7 @@ jobs:
 
       - name: Build installer
         working-directory: ${{ env.SETUP_DIR }}
-        run: ./ISCC.exe /F setup.exe DOSBox-X-setup.iss
+        run: ./ISCC.exe /F"setup.exe" DOSBox-X-setup.iss
       - name: Upload installer
         uses: actions/upload-artifact@v2
         with:
