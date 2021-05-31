@@ -29,6 +29,9 @@ jobs:
             bin/${{ matrix.arch }}/${{ matrix.type }}/*.exp
             bin/${{ matrix.arch }}/${{ matrix.type }}/*.lib
             bin/${{ matrix.arch }}/${{ matrix.type }}/*.pdb
+            vs2015/obj/**/${{ matrix.arch }}/Release/**/*.exp
+            vs2015/obj/**/${{ matrix.arch }}/Release/**/*.lib
+            vs2015/obj/**/${{ matrix.arch }}/Release/**/*.pdb
       - name: Build
         working-directory: vs2015
         env:
