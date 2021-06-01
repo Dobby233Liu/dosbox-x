@@ -21,6 +21,7 @@ jobs:
       - uses: microsoft/setup-msbuild@c26a08ba26249b81327e26f6ef381897b6a8754d # commithash because 1.0.2
         name: Init MSBuild
         
+      # FIXME: does not work
       - name: Cache IPDBs
         uses: actions/cache@v2
         with:
@@ -32,6 +33,7 @@ jobs:
             vs2015/obj/**/${{ matrix.arch }}/Release/**/*.exp
             vs2015/obj/**/${{ matrix.arch }}/Release/**/*.lib
             vs2015/obj/**/${{ matrix.arch }}/Release/**/*.pdb
+            
       - name: Build
         working-directory: vs2015
         env:
@@ -54,7 +56,7 @@ jobs:
           }
           Write-Host "::set-output name=zipname-sub::$zipname"
           $zip = "dosbox-x-windows-vs-$zipname.zip"
-      - name: Upload artifacts
+      - name: Upload build as an artifact
         uses: actions/upload-artifact@v2
         with:
           name: vs-${{ steps.zipname.outputs.zipname-sub }}
@@ -127,7 +129,8 @@ jobs:
           cp CHANGELOG _build/CHANGELOG.txt
           cp dosbox-x.reference.conf _build/dosbox-x.reference.conf
           cp dosbox-x.reference.full.conf _build/dosbox-x.reference.full.conf
-      - name: Upload build
+          
+      - name: Upload build as an artifact
         uses: actions/upload-artifact@v2
         with:
           name: mingw-win${{ matrix.arch }}${{ matrix.type }}
@@ -235,9 +238,10 @@ jobs:
 
       - name: Build installer
         working-directory: ${{ env.SETUP_DIR }}
-        run: ./ISCC.exe /F"setup" DOSBox-X-setup.iss
-      - name: Upload installer
+        run: ./ISCC.exe /F"dosbox-x-setup" DOSBox-X-setup.iss
+        
+      - name: Upload installer as an artifact
         uses: actions/upload-artifact@v2
         with:
           name: setup
-          path: ${{ env.SETUP_DIR }}\setup.exe
+          path: ${{ env.SETUP_DIR }}\dosbox-x-setup.exe
