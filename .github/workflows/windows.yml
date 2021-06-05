@@ -108,7 +108,7 @@ jobs:
     env:
       # Which ffmpeg version to build for the workaround below
       # see ffmpeg/ffmpeg repo
-      ffmpeg-release: 8d172d940946dce59841b1c95059f3b38f68ca61
+      ffmpeg-release: 3ac7d994280e913f41a246014d3cfb76070a6f3e
       
     steps:
       - uses: msys2/setup-msys2@v2
@@ -127,6 +127,7 @@ jobs:
             mingw-w64-i686-libslirp
             mingw-w64-i686-freetype
             mingw-w64-i686-nasm
+            mingw-w64-i686-dlfcn
       - uses: msys2/setup-msys2@v2
         name: Setup MSYS2 [x86_64]
         if: matrix.arch == '64'
@@ -143,6 +144,7 @@ jobs:
             mingw-w64-x86_64-libslirp
             mingw-w64-x86_64-freetype
             mingw-w64-x86_64-nasm
+            mingw-w64-x86_64-dlfcn
             
       # msys2's ffmpeg is broken, build ourselves
       - name: Clone ffmpeg
@@ -163,7 +165,9 @@ jobs:
         if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}/ffmpeg
         run: |
-          ./configure --enable-gpl --disable-debug --prefix=/mingw${{ matrix.arch }} --enable-shared
+          CFLAGS+=" -DWIN32"
+          CXXFLAGS+=" -DWIN32"
+          ./configure --enable-gpl --disable-debug --prefix=/mingw${{ matrix.arch }} --enable-shared --enable-runtime-cpudetect --enable-swresample --disable-doc
           make -j4
       - name: Install ffmpeg
         working-directory: ${{ github.workspace }}/ffmpeg
