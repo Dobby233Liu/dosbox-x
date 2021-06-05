@@ -37,7 +37,7 @@ jobs:
           INSTALL_PAGE = "https://github.com/joncampbell123/dosbox-x/blob/" + os.environ["SIMPLE_TAG"] + "/INSTALL.md"
 
           with open("CHANGELOG.md", "w", encoding="utf-8") as desc:
-            desc.write("Please read the installation instructions from the [INSTALL](%s) page for more info about these files. Also, always check out the [DOSBox-X homepage](%s) for latest updates.\n\n" % (INSTALL_PAGE, SITE))
+            desc.write("**Please read the [INSTALL](%s) page for more information about installing DOSBox-X on your system.** Also, always check out the [DOSBox-X homepage](%s) for latest updates.\n\n" % (INSTALL_PAGE, SITE))
             desc.write("You can also see the release notes [here](%s) and the user guide here: [DOSBox-X Wiki](%s)\n\n" % (CHANGELOG_URL, WIKI_LOC))
             with open("CHANGELOG", "r", encoding="utf-8") as changelog:
               def line_iterator(f):
