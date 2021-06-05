@@ -157,8 +157,8 @@ jobs:
         if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
         run: |
           wget -O a.tar.xz "https://ffmpeg.org/releases/ffmpeg-${{ env.ffmpeg-release }}.tar.xz"
-          mkdir -p "${{ github.workspace }}/ffmpeg"
-          tar -xJf a.tar.xz -C "${{ github.workspace }}/ffmpeg"
+          mkdir -p ffmpeg
+          tar -xJf a.tar.xz -C ffmpeg
       - name: Build ffmpeg
         if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}/ffmpeg
