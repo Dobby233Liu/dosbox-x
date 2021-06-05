@@ -1,5 +1,9 @@
 name: Build for Windows (or HX-DOS Extender)
-on: [push, pull_request] # TODO: release [released, prereleased]
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
 
 jobs:
   vsbuild:
@@ -56,6 +60,7 @@ jobs:
           }
           Write-Host "::set-output name=zipname-sub::$zipname"
           $zip = "dosbox-x-windows-vs-$zipname.zip"
+          Write-Host "::set-output name=zipname::$zip"
       - name: Upload build as an artifact
         uses: actions/upload-artifact@v2
         with:
@@ -65,6 +70,21 @@ jobs:
             !bin/${{ matrix.arch }}/${{ matrix.type }}/*.exp
             !bin/${{ matrix.arch }}/${{ matrix.type }}/*.lib
             !bin/${{ matrix.arch }}/${{ matrix.type }}/*.pdb
+            
+      - name: Generate zip if invoked by a Release
+        if: github.event_name == 'release'
+        run: |
+          ./vs2015/tool/zip.exe -r -9 build.zip "bin/${{ matrix.arch }}/${{ matrix.type }}" -x "*/\.exp" -x "*/\.lib" -x "*/\.pdb"
+      - name: Upload build to invoking Release
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }} 
+          asset_path: ./build.zip
+          asset_name: ${{ steps.zipname.outputs.zipname }}
+          asset_content_type: application/zip
   mingw:
     name: Build with MSYS2
     runs-on: windows-latest
@@ -78,8 +98,6 @@ jobs:
     defaults:
       run:
         shell: msys2 {0}
-    env:
-      ZIP_NAME: dosbox-x-mingw-win${{ matrix.arch }}${{ matrix.type }}.zip
       
     steps:
       - uses: msys2/setup-msys2@v2
@@ -92,6 +110,12 @@ jobs:
             base-devel
             mingw-w64-i686-toolchain
             mingw-w64-i686-libpng
+            mingw-w64-i686-ffmpeg
+            mingw-w64-i686-fluidsynth
+            mingw-w64-i686-ncurses
+            mingw-w64-i686-SDL_net
+            mingw-w64-i686-libslirp
+            mingw-w64-i686-freetype
       - uses: msys2/setup-msys2@v2
         name: Setup MSYS2 [x86_64]
         if: matrix.arch == '64'
@@ -102,12 +126,18 @@ jobs:
             base-devel
             mingw-w64-x86_64-toolchain
             mingw-w64-x86_64-libpng
+            mingw-w64-x86_64-ffmpeg
+            mingw-w64-x86_64-fluidsynth
+            mingw-w64-x86_64-ncurses
+            mingw-w64-x86_64-SDL_net
+            mingw-w64-x86_64-libslirp
+            mingw-w64-x86_64-freetype
       - name: Install SDL2 [32]
         if: matrix.arch == '32' && matrix.type == '-sdl2'
-        run: pacman --noconfirm --needed -S mingw-w64-i686-SDL2
+        run: pacman --noconfirm --needed -S mingw-w64-i686-SDL2 mingw-w64-i686-SDL2_net
       - name: Install SDL2 [64]
         if: matrix.arch == '64' && matrix.type == '-sdl2'
-        run: pacman --noconfirm --needed -S mingw-w64-x86_64-SDL2
+        run: pacman --noconfirm --needed -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_net
         
       - uses: actions/checkout@v2
         name: Checkout repo
@@ -135,6 +165,21 @@ jobs:
         with:
           name: mingw-win${{ matrix.arch }}${{ matrix.type }}
           path: _build
+          
+      - name: Generate zip if invoked by a Release
+        if: github.event_name == 'release'
+        run: |
+          ./vs2015/tool/zip.exe -r -9 build.zip _build
+      - name: Upload build to invoking Release
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }} 
+          asset_path: ./build.zip
+          asset_name: dosbox-x-mingw-win${{ matrix.arch }}${{ matrix.type }}.zip
+          asset_content_type: application/zip
   installer: # (Wengier)
     name: Build Inno Setup installer
     runs-on: windows-latest
@@ -148,15 +193,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      # FIXME: use external build
-      - name: Intergrity check
-        working-directory: ${{ env.SETUP_DIR }}
-        run: |
-          if ( -Not (Test-Path "ISCC.exe") )
-          {
-            Write-Host "::error ::Inno Setup Compiler is not found in $env:SETUP_DIR."
-            exit 1
-          }
+
       - name: Download builds
         uses: actions/download-artifact@v2
         
@@ -252,3 +289,24 @@ jobs:
         with:
           name: setup
           path: ${{ env.SETUP_DIR }}\dosbox-x-windows-setup-allusers.exe
+
+      - name: Upload setup to invoking Release
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }} 
+          asset_path: ${{ env.SETUP_DIR }}\dosbox-x-windows-setup.exe
+          asset_name: dosbox-x-windows-setup.exe
+          asset_content_type: application/octet-stream
+      - name: Upload Vista-only setup to invoking Release
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }} 
+          asset_path: ${{ env.SETUP_DIR }}\dosbox-x-windows-setup-allusers.exe
+          asset_name: dosbox-x-windows-setup-allusers.exe
+          asset_content_type: application/octet-stream
