@@ -145,7 +145,14 @@ jobs:
             mingw-w64-x86_64-freetype
             mingw-w64-x86_64-nasm
             mingw-w64-x86_64-dlfcn
-            
+
+      - name: Install SDL2 [32]
+        if: matrix.arch == '32' && matrix.type == '-sdl2'
+        run: pacman --noconfirm --needed -S mingw-w64-i686-SDL2 mingw-w64-i686-SDL2_net
+      - name: Install SDL2 [64]
+        if: matrix.arch == '64' && matrix.type == '-sdl2'
+        run: pacman --noconfirm --needed -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_net
+        
       # msys2's ffmpeg is broken, build ourselves
       - name: Cache ffmpeg
         id: cache-ffmpeg
@@ -171,15 +178,8 @@ jobs:
         working-directory: D:\a\dosbox-x\dosbox-x\ffmpeg
         run: |
           make install  
-          local PREFIX_DEPS=$(cygpath -am /mingw${{ matrix.arch }})
+          PREFIX_DEPS=$(cygpath -am /mingw${{ matrix.arch }})
           find /mingw${{ matrix.arch }}/lib/pkgconfig -name *.pc -exec sed -i -e"s|${PREFIX_DEPS}|/mingw${{ matrix.arch }}|g" {} \;
-        
-      - name: Install SDL2 [32]
-        if: matrix.arch == '32' && matrix.type == '-sdl2'
-        run: pacman --noconfirm --needed -S mingw-w64-i686-SDL2 mingw-w64-i686-SDL2_net
-      - name: Install SDL2 [64]
-        if: matrix.arch == '64' && matrix.type == '-sdl2'
-        run: pacman --noconfirm --needed -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_net
         
       - uses: actions/checkout@v2
         name: Checkout repo
