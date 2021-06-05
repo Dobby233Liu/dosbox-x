@@ -156,8 +156,8 @@ jobs:
       - name: Download ffmpeg
         if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
         run: |
-          wget -o a.tar.xz "https://ffmpeg.org/releases/ffmpeg-${{ env.ffmpeg-release }}.tar.xz"
-          mkdir -P "${{ github.workspace }}/ffmpeg"
+          wget -O a.tar.xz "https://ffmpeg.org/releases/ffmpeg-${{ env.ffmpeg-release }}.tar.xz"
+          mkdir -p "${{ github.workspace }}/ffmpeg"
           tar -xJf a.tar.xz -C "${{ github.workspace }}/ffmpeg"
       - name: Build ffmpeg
         if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
@@ -171,7 +171,7 @@ jobs:
         working-directory: ${{ github.workspace }}/ffmpeg
         run: |
           make install  
-          local $PREFIX_DEPS=$(cygpath -am /mingw${{ matrix.arch }})
+          local PREFIX_DEPS=$(cygpath -am /mingw${{ matrix.arch }})
           find /mingw${{ matrix.arch }}/lib/pkgconfig -name *.pc -exec sed -i -e"s|${PREFIX_DEPS}|/mingw${{ matrix.arch }}|g" {} \;
         
       - name: Install SDL2 [32]
