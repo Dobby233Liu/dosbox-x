@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      # FIXME: evaluate something else
+      # FIXME: evaluate (with) something else
       - name: Generate release name from headers
         id: header
         run: |
@@ -27,7 +27,8 @@ jobs:
       # FIXME: python
       - env:
           DOSBOX_VERSION: ${{ steps.header.outputs.version }}
-          SIMPLE_TAG: ${{ github.sha }}
+          # NTS: INSTALL.md is ONLY updated after release, so hardcode master
+          SIMPLE_TAG: master
         run: |
           import os
           SITE = "https://dosbox-x.com"
@@ -36,7 +37,7 @@ jobs:
           INSTALL_PAGE = "https://github.com/joncampbell123/dosbox-x/blob/" + os.environ["SIMPLE_TAG"] + "/INSTALL.md"
 
           with open("CHANGELOG.md", "w", encoding="utf-8") as desc:
-            desc.write("Note: Installation instructions are available from the [INSTALL](%s) page. Also, always check out the [DOSBox-X homepage](%s) for latest updates.\n\n" % (INSTALL_PAGE, SITE))
+            desc.write("Please read the installation instructions from the [INSTALL](%s) page for more info about these files. Also, always check out the [DOSBox-X homepage](%s) for latest updates.\n\n" % (INSTALL_PAGE, SITE))
             desc.write("You can also see the release notes [here](%s) and the user guide here: [DOSBox-X Wiki](%s)\n\n" % (CHANGELOG_URL, WIKI_LOC))
             with open("CHANGELOG", "r", encoding="utf-8") as changelog:
               def line_iterator(f):
@@ -56,24 +57,12 @@ jobs:
       - run: cat CHANGELOG.md
         name: Check release body
       - name: Create Release
-        id: release
-        continue-on-error: true
-        uses: actions/create-release@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ncipollo/release-action@a5a057b70732aaff1a5f3e4033950338ef662e7a
         with:
-          tag_name: ${{ github.ref }}
-          release_name: DOSBox-X ${{ steps.header.outputs.version }} ${{ github.event.head_commit.timestamp }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          commit: ${{ github.sha }}
+          allowUpdates: true
+          name: DOSBox-X ${{ steps.header.outputs.version }} ${{ github.event.head_commit.timestamp }}
           body_path: CHANGELOG.md
-          draft: false
-          prerelease: false
-      # FIXME: is it needed?
-      - name: Update existing release if already exists
-        uses: tubone24/update_release@master
-        if: steps.release.outcome == 'failure'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: DOSBox-X ${{ steps.header.outputs.version }} ${{ github.event.head_commit.timestamp }}
-          body_path: CHANGELOG.md
+          replacesArtifacts: false
