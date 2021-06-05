@@ -25,6 +25,13 @@ jobs:
       - uses: microsoft/setup-msbuild@c26a08ba26249b81327e26f6ef381897b6a8754d # commithash because 1.0.2
         name: Init MSBuild
         
+      # DXSDK is included in WinSDK
+      #- name: Install DirectX SDK
+      #  working-directory: ${{ runner.temp }}
+      #  run: |
+      #    curl -O sdk.exe https://download.microsoft.com/download/A/E/7/AE743F1F-632B-4809-87A9-AA1BB3458E31/DXSDK_Jun10.exe#/Inst.exe
+      #    ./sdk.exe /P "C:\dxsdk" /U /F /silent
+
       # FIXME: does not work
       - name: Cache IPDBs
         uses: actions/cache@v2
@@ -98,6 +105,10 @@ jobs:
     defaults:
       run:
         shell: msys2 {0}
+    env:
+      # Which ffmpeg version to build for the workaround below
+      # see ffmpeg/ffmpeg repo
+      ffmpeg-release: 8d172d940946dce59841b1c95059f3b38f68ca61
       
     steps:
       - uses: msys2/setup-msys2@v2
@@ -132,18 +143,32 @@ jobs:
             mingw-w64-x86_64-libslirp
             mingw-w64-x86_64-freetype
             mingw-w64-x86_64-nasm
+            
       # msys2's ffmpeg is broken, build ourselves
       - name: Clone ffmpeg
         uses: actions/checkout@v2
         with:
           repository: FFmpeg/FFmpeg # bleeding edge
           submodules: "recursive"
+          ref: ${{ env.ffmpeg-release }}
           path: ffmpeg
-      - name: Install ffmpeg
+      # TODO: consider moving it to the top
+      - name: Cache ffmpeg
+        id: cache-ffmpeg
+        uses: actions/cache@v2
+        with:
+          path: ${{ github.workspace }}/ffmpeg
+          key: msys2-mingw-ffmpeg-${{ env.ffmpeg-release }}
+      - name: Build ffmpeg
+        if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}/ffmpeg
         run: |
           ./configure --enable-gpl --disable-debug --prefix=/mingw${{ matrix.arch }} --enable-shared
-          make -j4 && make install
+          make -j4
+      - name: Install ffmpeg
+        working-directory: ${{ github.workspace }}/ffmpeg
+        run: make install
+        
       - name: Install SDL2 [32]
         if: matrix.arch == '32' && matrix.type == '-sdl2'
         run: pacman --noconfirm --needed -S mingw-w64-i686-SDL2 mingw-w64-i686-SDL2_net
