@@ -110,7 +110,6 @@ jobs:
             base-devel
             mingw-w64-i686-toolchain
             mingw-w64-i686-libpng
-            mingw-w64-i686-ffmpeg
             mingw-w64-i686-fluidsynth
             mingw-w64-i686-ncurses
             mingw-w64-i686-SDL_net
@@ -126,12 +125,23 @@ jobs:
             base-devel
             mingw-w64-x86_64-toolchain
             mingw-w64-x86_64-libpng
-            mingw-w64-x86_64-ffmpeg
             mingw-w64-x86_64-fluidsynth
             mingw-w64-x86_64-ncurses
             mingw-w64-x86_64-SDL_net
             mingw-w64-x86_64-libslirp
             mingw-w64-x86_64-freetype
+      # msys2's ffmpeg is broken, build ourselves
+      - name: Clone ffmpeg
+        uses: actions/checkout@v2
+        with:
+          repository: FFmpeg/FFmpeg # bleeding edge
+          submodules: "recursive"
+          path: ffmpeg
+      - name: Install ffmpeg
+        working-directory: ${{ github.workspace }}/ffmpeg
+        run: |
+          ./configure --enable-gpl --disable-debug --prefix=/mingw${{ matrix.arch }} --enable-shared
+          make -j4 && make install
       - name: Install SDL2 [32]
         if: matrix.arch == '32' && matrix.type == '-sdl2'
         run: pacman --noconfirm --needed -S mingw-w64-i686-SDL2 mingw-w64-i686-SDL2_net
