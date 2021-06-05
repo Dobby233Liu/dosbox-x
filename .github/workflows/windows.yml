@@ -4,7 +4,7 @@ on: [push, pull_request] # TODO: release [released, prereleased]
 jobs:
   vsbuild:
     name: Build with Visual Studio
-    runs-on: windows-latest # this image currently has VS2019, but that may change anytime
+    runs-on: windows-latest # currently has Visual Studio 2019
 
     strategy:
       matrix:
@@ -238,10 +238,17 @@ jobs:
 
       - name: Build installer
         working-directory: ${{ env.SETUP_DIR }}
-        run: ./ISCC.exe /F"dosbox-x-setup" DOSBox-X-setup.iss
+        run: |
+          ./ISCC.exe /F"dosbox-x-windows-setup" DOSBox-X-setup.iss
+          ./allusers/ISCC.exe /F"dosbox-x-windows-setup-allusers" allusers/DOSBox-X-setup.iss
         
       - name: Upload installer as an artifact
         uses: actions/upload-artifact@v2
         with:
           name: setup
-          path: ${{ env.SETUP_DIR }}\dosbox-x-setup.exe
+          path: ${{ env.SETUP_DIR }}\dosbox-x-windows-setup.exe
+      - name: Upload Vista-only installer as an artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: setup
+          path: ${{ env.SETUP_DIR }}\dosbox-x-windows-setup-allusers.exe
