@@ -178,7 +178,7 @@ jobs:
         working-directory: D:\a\dosbox-x\dosbox-x\ffmpeg
         run: |
           make install  
-          PREFIX_DEPS=$(cygpath -am /mingw${{ matrix.arch }})
+          PREFIX_DEPS=`cygpath -am /mingw${{ matrix.arch }}`
           find /mingw${{ matrix.arch }}/lib/pkgconfig -name *.pc -exec sed -i -e"s|${PREFIX_DEPS}|/mingw${{ matrix.arch }}|g" {} \;
         
       - uses: actions/checkout@v2
@@ -190,6 +190,19 @@ jobs:
         env:
           EXE_FILE: build-mingw${{ matrix.type }}
         run: |
+          kinds='libavcodec libavformat libavutil libswscale'
+          for cur in $kinds
+          do
+            echo "adding $cur to compile"
+            CFLAG=`pkg-config --cflags --static $cur`
+            LDFLAG=`pkg-config --libs --static $cur`
+            export CFLAGS+=" "
+            export CFLAGS+=$CFLAG
+            export CXXFLAGS+=" "
+            export CXXFLAGS+=$CFLAG
+            export LDFLAGS+=" "
+            export LDFLAGS+=$LDFLAG
+          done
           chmod +x $EXE_FILE
           ./$EXE_FILE
           
