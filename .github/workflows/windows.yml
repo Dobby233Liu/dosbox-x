@@ -115,6 +115,7 @@ jobs:
             mingw-w64-i686-SDL_net
             mingw-w64-i686-libslirp
             mingw-w64-i686-freetype
+            mingw-w64-i686-nasm
       - uses: msys2/setup-msys2@v2
         name: Setup MSYS2 [x86_64]
         if: matrix.arch == '64'
@@ -130,6 +131,7 @@ jobs:
             mingw-w64-x86_64-SDL_net
             mingw-w64-x86_64-libslirp
             mingw-w64-x86_64-freetype
+            mingw-w64-x86_64-nasm
       # msys2's ffmpeg is broken, build ourselves
       - name: Clone ffmpeg
         uses: actions/checkout@v2
