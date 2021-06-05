@@ -108,7 +108,7 @@ jobs:
     env:
       # Which ffmpeg version to build for the workaround below
       # see ffmpeg/ffmpeg repo
-      ffmpeg-release: 3ac7d994280e913f41a246014d3cfb76070a6f3e
+      ffmpeg-release: 4.4
       
     steps:
       - uses: msys2/setup-msys2@v2
@@ -155,10 +155,9 @@ jobs:
           key: msys2-mingw-ffmpeg-${{ env.ffmpeg-release }}
       - name: Download ffmpeg
         if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
-        working-directory: ${{ runner.temp }}
         run: |
-          wget -o a.tar.xz https://ffmpeg.org/releases/ffmpeg-${{ env.ffmpeg-release }}.tar.xz
-          mkdir "${{ github.workspace }}/ffmpeg"
+          wget -o a.tar.xz "https://ffmpeg.org/releases/ffmpeg-${{ env.ffmpeg-release }}.tar.xz"
+          mkdir -P "${{ github.workspace }}/ffmpeg"
           tar -xJf a.tar.xz -C "${{ github.workspace }}/ffmpeg"
       - name: Build ffmpeg
         if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
