@@ -154,7 +154,6 @@ jobs:
           submodules: recursive
           ref: n${{ env.ffmpeg-release }}
           path: ffmpeg
-          clone-depth: 2
       - name: Patch ffmpeg
         if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}\ffmpeg
@@ -178,13 +177,14 @@ jobs:
           export PATH="$PATH:/usr/bin:/mingw${{ matrix.host }}/bin"
           export PKG_CONFIG_PATH=/mingw${{ matrix.arch }}/lib/pkgconfig
           export WINDOWS_BUILD=1
-          ./configure --disable-network --enable-w32threads --enable-small --target-os=mingw${{ matrix.arch }} --arch=$MSYSTEM_CARCH --enable-gpl --enable-version3 --disable-debug --enable-pic --prefix=/mingw${{ matrix.arch }} --disable-programs --enable-static --enable-shared --enable-runtime-cpudetect --disable-doc
+          ./configure --disable-network --enable-small --target-os=mingw${{ matrix.arch }} --arch=$MSYSTEM_CARCH --enable-gpl --enable-version3 --disable-debug --enable-pic --prefix=/mingw${{ matrix.arch }} --disable-programs --enable-static --enable-shared --enable-runtime-cpudetect --disable-doc
           make -j
       - name: Install ffmpeg
         working-directory: ${{ github.workspace }}\ffmpeg
         run: |
           export PKG_CONFIG_PATH=/mingw${{ matrix.arch }}/lib/pkgconfig
           make install  
+          dir /mingw${{ matrix.arch }}
           PREFIX_DEPS=`cygpath -am /mingw${{ matrix.arch }}`
           find /mingw${{ matrix.arch }}/lib/pkgconfig -name *.pc -exec sed -i -e"s|${PREFIX_DEPS}|/mingw${{ matrix.arch }}|g" {} \;
         
@@ -197,6 +197,7 @@ jobs:
         env:
           EXE_FILE: build-mingw${{ matrix.type }}
         run: |
+          export PKG_CONFIG_PATH=/mingw${{ matrix.arch }}/lib/pkgconfig
           chmod +x $EXE_FILE
           ./$EXE_FILE
           
