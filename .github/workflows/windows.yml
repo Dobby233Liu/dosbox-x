@@ -172,8 +172,11 @@ jobs:
         run: |
           CFLAGS+=" -DWIN32"
           CXXFLAGS+=" -DWIN32"
-          ./configure --target-os=mingw32 --arch=${CARCH%%-*} --enable-gpl --enable-version3 --disable-debug --enable-pic --prefix=/mingw${{ matrix.arch }} --disable-programs --enable-static --enable-shared --enable-runtime-cpudetect --disable-doc
-          make -j4
+          export PATH="$PATH:/usr/bin:/mingw${{ matrix.host }}/bin"
+          export PKG_CONFIG_PATH=/mingw${{ matrix.arch }}/lib/pkgconfig
+          export WINDOWS_BUILD=1
+          ./configure --disable-network --enable-w32threads --host=${CARCH%%-*}-w64-mingw${{ matrix.host }} --target-os=mingw${{ matrix.arch }} --arch=${CARCH%%-*} --enable-gpl --enable-version3 --disable-debug --enable-pic --prefix=/mingw${{ matrix.arch }} --disable-programs --enable-static --enable-shared --enable-runtime-cpudetect --disable-doc
+          make -j
       - name: Install ffmpeg
         working-directory: D:\a\dosbox-x\dosbox-x\ffmpeg
         run: |
@@ -196,6 +199,8 @@ jobs:
             echo "adding $cur to compile"
             CFLAG=`pkg-config --cflags --static $cur`
             LDFLAG=`pkg-config --libs --static $cur`
+            echo $CFLAG
+            echo $LDFLAG
             export CFLAGS+=" "
             export CFLAGS+=$CFLAG
             export CXXFLAGS+=" "
