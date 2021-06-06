@@ -132,11 +132,56 @@ jobs:
             mingw-w64-${{ steps.carch.outputs.carch }}-SDL_net
             mingw-w64-${{ steps.carch.outputs.carch }}-libslirp
             mingw-w64-${{ steps.carch.outputs.carch }}-freetype
-            mingw-w64-${{ steps.carch.outputs.carch }}-ffmpeg
+            yasm
       # MSYS2 is installed, use internal variable
       - name: Install SDL2
         if: matrix.type == '-sdl2'
         run: pacman --noconfirm --needed -S mingw-w64-$MSYSTEM_CARCH-SDL2 mingw-w64-$MSYSTEM_CARCH-SDL2_net
+        
+      # msys2's ffmpeg package is broken, sobuild it ourselves
+      - name: Cache ffmpeg
+        id: cache-ffmpeg
+        uses: actions/cache@v2
+        with:
+          path: ${{ github.workspace }}\ffmpeg
+          key: msys2-mingw-ffmpeg-${{ env.ffmpeg-release }}
+      - name: Clone ffmpeg
+        if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+          repository: FFmpeg/FFmpeg
+          submodules: recursive
+          ref: n${{ env.ffmpeg-release }}
+          path: ffmpeg
+      - name: Patch ffmpeg
+        if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
+        working-directory: ${{ github.workspace }}\ffmpeg
+        run: |
+          git config core.fileMode true
+          git reset --hard refs/tags/n${{ env.ffmpeg-release }}
+          pfiles="0001-create-lib-libraries.patch 0003-fix-windowsinclude.patch 0004-fix-debug-build.patch 0006-fix-StaticFeatures.patch 0007-fix-lib-naming.patch 0009-Fix-fdk-detection.patch 0010-Fix-x264-detection.patch 0011-Fix-x265-detection.patch 0012-Fix-ssl-110-detection.patch 0013-define-WINVER.patch 0014-avfilter-dependency-fix.patch 0015-Fix-xml2-detection.patch 0016-configure-dnn-needs-avformat.patch"
+          for file in $pfiles
+          do
+            echo "downloading $file"
+            wget -q "https://raw.githubusercontent.com/microsoft/vcpkg/c4fedf081dcd0931e2aaab5ab1afa21e31a94e6d/ports/ffmpeg/$file"
+            echo "patching"
+            git apply $file
+          done
+      - name: Build ffmpeg
+        if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
+        working-directory: ${{ github.workspace }}\ffmpeg
+        run: |
+          CFLAGS+=" -DWIN32"
+          CXXFLAGS+=" -DWIN32"
+          ./configure --disable-network --enable-small --target-os=mingw${{ matrix.arch }} --arch=$MSYSTEM_CARCH --enable-gpl --enable-version3 --disable-debug --enable-pic --prefix=/mingw${{ matrix.arch }} --disable-programs --enable-static --enable-shared --enable-runtime-cpudetect --disable-doc
+          make -j
+      - name: Install ffmpeg
+        working-directory: ${{ github.workspace }}\ffmpeg
+        run: |
+          make install
+          mv /mingw${{ matrix.arch }}/bin/*.lib /mingw${{ matrix.arch }}/lib/
+          PREFIX_DEPS=`cygpath -am /mingw${{ matrix.arch }}`
+          find /mingw${{ matrix.arch }}/lib/pkgconfig -name *.pc -exec sed -i -e"s|${PREFIX_DEPS}|/mingw${{ matrix.arch }}|g" {} \;
         
       - uses: actions/checkout@v2
         name: Checkout repo
@@ -147,7 +192,6 @@ jobs:
         env:
           EXE_FILE: build-mingw${{ matrix.type }}
         run: |
-          export PKG_CONFIG_PATH=/mingw${{ matrix.arch }}/lib/pkgconfig
           chmod +x $EXE_FILE
           ./$EXE_FILE
           
