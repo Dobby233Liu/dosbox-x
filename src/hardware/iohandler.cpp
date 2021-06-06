@@ -16,7 +16,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-
+#include <assert.h>
 #include <string.h>
 #include "control.h"
 #include "dosbox.h"
@@ -27,6 +27,8 @@
 #include "callback.h"
 
 //#define ENABLE_PORTLOG
+
+#include <math.h> /* floor */
 
 #include <vector>
 
