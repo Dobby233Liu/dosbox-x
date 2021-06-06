@@ -112,46 +112,25 @@ jobs:
       
     steps:
       - uses: msys2/setup-msys2@v2
-        name: Setup MSYS2 [i686]
-        if: matrix.arch == '32'
+        name: Setup MSYS2
         with:
           MSYSTEM: MINGW${{ matrix.arch }}
           path-type: strict
           install: >-
             base-devel
-            mingw-w64-i686-toolchain
-            mingw-w64-i686-libpng
-            mingw-w64-i686-fluidsynth
-            mingw-w64-i686-ncurses
-            mingw-w64-i686-SDL_net
-            mingw-w64-i686-libslirp
-            mingw-w64-i686-freetype
-            mingw-w64-i686-nasm
-            mingw-w64-i686-dlfcn
-      - uses: msys2/setup-msys2@v2
-        name: Setup MSYS2 [x86_64]
-        if: matrix.arch == '64'
-        with:
-          MSYSTEM: MINGW${{ matrix.arch }}
-          path-type: strict
-          install: >-
-            base-devel
-            mingw-w64-x86_64-toolchain
-            mingw-w64-x86_64-libpng
-            mingw-w64-x86_64-fluidsynth
-            mingw-w64-x86_64-ncurses
-            mingw-w64-x86_64-SDL_net
-            mingw-w64-x86_64-libslirp
-            mingw-w64-x86_64-freetype
-            mingw-w64-x86_64-nasm
-            mingw-w64-x86_64-dlfcn
+            mingw-w64-$MSYSTEM_CARCH-toolchain
+            mingw-w64-$MSYSTEM_CARCH-libpng
+            mingw-w64-$MSYSTEM_CARCH-fluidsynth
+            mingw-w64-$MSYSTEM_CARCH-ncurses
+            mingw-w64-$MSYSTEM_CARCH-SDL_net
+            mingw-w64-$MSYSTEM_CARCH-libslirp
+            mingw-w64-$MSYSTEM_CARCH-freetype
+            mingw-w64-$MSYSTEM_CARCH-nasm
+            mingw-w64-$MSYSTEM_CARCH-dlfcn
 
-      - name: Install SDL2 [32]
-        if: matrix.arch == '32' && matrix.type == '-sdl2'
-        run: pacman --noconfirm --needed -S mingw-w64-i686-SDL2 mingw-w64-i686-SDL2_net
-      - name: Install SDL2 [64]
-        if: matrix.arch == '64' && matrix.type == '-sdl2'
-        run: pacman --noconfirm --needed -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_net
+      - name: Install SDL2
+        if: matrix.type == '-sdl2'
+        run: pacman --noconfirm --needed -S mingw-w64-$MSYSTEM_CARCH-SDL2 mingw-w64-$MSYSTEM_CARCH-SDL2_net
         
       # msys2's ffmpeg is broken, build ourselves
       - name: Cache ffmpeg
@@ -166,6 +145,7 @@ jobs:
         with:
           repository: FFmpeg/FFmpeg
           ref: n${{ env.ffmpeg-release }}
+          path: ffmpeg
       - name: Patch ffmpeg
         if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}\ffmpeg
