@@ -111,6 +111,18 @@ jobs:
       ffmpeg-release: 4.4
       
     steps:
+      - name: MSYSTEM_CARCH
+        shell: powershell
+        id: carch
+        env:
+          TMP_ARCH: ${{ matrix.arch }}
+        run: |
+          $cur = "i686"
+          if ( $env:TMP_ARCH -eq "64" )
+          {
+            $cur = "x86_64"
+          }
+          echo "::set-output name=carch::$cur"
       - uses: msys2/setup-msys2@v2
         name: Setup MSYS2
         with:
@@ -118,15 +130,15 @@ jobs:
           path-type: strict
           install: >-
             base-devel
-            mingw-w64-$MSYSTEM_CARCH-toolchain
-            mingw-w64-$MSYSTEM_CARCH-libpng
-            mingw-w64-$MSYSTEM_CARCH-fluidsynth
-            mingw-w64-$MSYSTEM_CARCH-ncurses
-            mingw-w64-$MSYSTEM_CARCH-SDL_net
-            mingw-w64-$MSYSTEM_CARCH-libslirp
-            mingw-w64-$MSYSTEM_CARCH-freetype
-            mingw-w64-$MSYSTEM_CARCH-nasm
-            mingw-w64-$MSYSTEM_CARCH-dlfcn
+            mingw-w64-${{ steps.carch.outputs.carch }}-toolchain
+            mingw-w64-${{ steps.carch.outputs.carch }}-libpng
+            mingw-w64-${{ steps.carch.outputs.carch }}-fluidsynth
+            mingw-w64-${{ steps.carch.outputs.carch }}-ncurses
+            mingw-w64-${{ steps.carch.outputs.carch }}-SDL_net
+            mingw-w64-${{ steps.carch.outputs.carch }}-libslirp
+            mingw-w64-${{ steps.carch.outputs.carch }}-freetype
+            mingw-w64-${{ steps.carch.outputs.carch }}-nasm
+            mingw-w64-${{ steps.carch.outputs.carch }}-dlfcn
 
       - name: Install SDL2
         if: matrix.type == '-sdl2'
