@@ -138,13 +138,15 @@ jobs:
         if: matrix.type == '-sdl2'
         run: pacman --noconfirm --needed -S mingw-w64-$MSYSTEM_CARCH-SDL2 mingw-w64-$MSYSTEM_CARCH-SDL2_net
         
-      # msys2's ffmpeg package is broken, sobuild it ourselves
+      # NTS: msys2's ffmpeg package is currently broken (by a lot!),
+      # so build it ourselves
+      # hn: Do we need to install ffmpeg for lowend?
       - name: Cache ffmpeg
         id: cache-ffmpeg
         uses: actions/cache@v2
         with:
           path: ${{ github.workspace }}\ffmpeg
-          key: msys2-mingw-ffmpeg-${{ env.ffmpeg-release }}
+          key: msys2-mingw-ffmpeg-${{ env.ffmpeg-release }}${{ matrix.type }}
       - name: Clone ffmpeg
         if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
@@ -159,6 +161,7 @@ jobs:
         run: |
           git config core.fileMode true
           git reset --hard refs/tags/n${{ env.ffmpeg-release }}
+          # NTS: update when vcpkg updates ffmpeg
           pfiles="0001-create-lib-libraries.patch 0003-fix-windowsinclude.patch 0004-fix-debug-build.patch 0006-fix-StaticFeatures.patch 0007-fix-lib-naming.patch 0009-Fix-fdk-detection.patch 0010-Fix-x264-detection.patch 0011-Fix-x265-detection.patch 0012-Fix-ssl-110-detection.patch 0013-define-WINVER.patch 0014-avfilter-dependency-fix.patch 0015-Fix-xml2-detection.patch 0016-configure-dnn-needs-avformat.patch"
           for file in $pfiles
           do
