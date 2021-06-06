@@ -175,11 +175,12 @@ jobs:
           export PATH="$PATH:/usr/bin:/mingw${{ matrix.host }}/bin"
           export PKG_CONFIG_PATH=/mingw${{ matrix.arch }}/lib/pkgconfig
           export WINDOWS_BUILD=1
-          ./configure --disable-network --enable-w32threads --host=${CARCH%%-*}-w64-mingw${{ matrix.host }} --target-os=mingw${{ matrix.arch }} --arch=${CARCH%%-*} --enable-gpl --enable-version3 --disable-debug --enable-pic --prefix=/mingw${{ matrix.arch }} --disable-programs --enable-static --enable-shared --enable-runtime-cpudetect --disable-doc
+          ./configure --disable-network --enable-w32threads --enable-small --host=$MSYSTEM_CARCH-w64-mingw${{ matrix.arch }} --target-os=mingw${{ matrix.arch }} --arch=${CARCH%%-*} --enable-gpl --enable-version3 --disable-debug --enable-pic --prefix=/mingw${{ matrix.arch }} --disable-programs --enable-static --enable-shared --enable-runtime-cpudetect --disable-doc
           make -j
       - name: Install ffmpeg
         working-directory: D:\a\dosbox-x\dosbox-x\ffmpeg
         run: |
+          export PKG_CONFIG_PATH=/mingw${{ matrix.arch }}/lib/pkgconfig
           make install  
           PREFIX_DEPS=`cygpath -am /mingw${{ matrix.arch }}`
           find /mingw${{ matrix.arch }}/lib/pkgconfig -name *.pc -exec sed -i -e"s|${PREFIX_DEPS}|/mingw${{ matrix.arch }}|g" {} \;
