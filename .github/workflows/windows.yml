@@ -183,7 +183,8 @@ jobs:
         working-directory: ${{ github.workspace }}\ffmpeg
         run: |
           export PKG_CONFIG_PATH=/mingw${{ matrix.arch }}/lib/pkgconfig
-          make install  
+          make VERBOSE=1 install
+          make VERBOSE=1 DESTDIR="/mingw${{ matrix.arch }}/$MSYSTEM_CARCH-w64-mingw${{ matrix.arch }}" install
           dir /mingw${{ matrix.arch }}
           PREFIX_DEPS=`cygpath -am /mingw${{ matrix.arch }}`
           find /mingw${{ matrix.arch }}/lib/pkgconfig -name *.pc -exec sed -i -e"s|${PREFIX_DEPS}|/mingw${{ matrix.arch }}|g" {} \;
