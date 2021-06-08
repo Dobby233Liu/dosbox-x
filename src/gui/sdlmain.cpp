@@ -60,13 +60,14 @@ extern bool log_int21;
 extern bool log_fileio;
 extern bool enable_autosave;
 extern bool noremark_save_state;
-extern bool force_load_state;
 extern bool use_quick_reboot;
+extern bool force_load_state;
+extern bool force_conversion;
 extern bool pc98_force_ibm_layout;
 extern bool enable_config_as_shell_commands;
-bool usesystemcursor = false;
 bool dos_kernel_disabled = true;
 bool winrun=false, use_save_file=false;
+bool usesystemcursor = false, enableime = false;
 bool maximize = false, direct_mouse_clipboard=false;
 bool mountfro[26], mountiro[26];
 bool OpenGL_using(void), Direct3D_using(void);
@@ -119,6 +120,7 @@ void GFX_OpenGLRedrawScreen(void);
 #include "bios_disk.h"
 #include "inout.h"
 #include "jfont.h"
+#include "render.h"
 #include "../dos/cdrom.h"
 #include "../dos/drives.h"
 #include "../ints/int10.h"
@@ -274,13 +276,14 @@ static bool PasteClipboardNext();
 void d3d_init(void);
 #endif
 bool TTF_using(void);
-extern bool isDBCSCP();
 void ShutDownMemHandles(Section * sec);
 void resetFontSize(), decreaseFontSize();
 void MAPPER_ReleaseAllKeys(), GFX_ReleaseMouse();
 void GetMaxWidthHeight(int *pmaxWidth, int *pmaxHeight);
+bool isDBCSCP(), InitCodePage();
 int GetNumScreen();
 extern SHELL_Cmd cmd_list[];
+extern uint8_t lead[6];
 
 SDL_Block sdl;
 Bitu frames = 0;
@@ -288,7 +291,9 @@ unsigned int page=0;
 unsigned int hostkeyalt=0;
 unsigned int sendkeymap=0;
 std::string strPasteBuffer = "";
-ScreenSizeInfo          screen_size_info;
+ScreenSizeInfo screen_size_info;
+bool CodePageHostToGuestUTF16(char *d/*CROSS_LEN*/,const uint16_t *s/*CROSS_LEN*/);
+bool CodePageGuestToHostUTF16(uint16_t *d/*CROSS_LEN*/,const char *s/*CROSS_LEN*/);
 
 #if defined(USE_TTF)
 Render_ttf ttf;
@@ -300,7 +305,7 @@ bool showsout = false;
 bool dbcs_sbcs = true;
 bool printfont = true;
 bool autoboxdraw = true;
-bool halfwidthkana = false;
+bool halfwidthkana = true;
 int outputswitch = -1;
 int wpType = 0;
 int wpVersion = 0;
@@ -4060,9 +4065,9 @@ void change_output(int output) {
 #if C_PRINTER
     mainMenu.get_item("ttf_printfont").enable(TTF_using()).check(printfont).refresh_item(mainMenu);
 #endif
-    mainMenu.get_item("ttf_dbcs_sbcs").enable(TTF_using()&&!IS_PC98_ARCH&&enable_dbcs_tables).check(dbcs_sbcs).refresh_item(mainMenu);
-    mainMenu.get_item("ttf_autoboxdraw").enable(TTF_using()&&!IS_PC98_ARCH&&enable_dbcs_tables).check(autoboxdraw).refresh_item(mainMenu);
-    mainMenu.get_item("ttf_halfwidthkana").enable(TTF_using()&&!IS_PC98_ARCH&&enable_dbcs_tables).check(halfwidthkana).refresh_item(mainMenu);
+    mainMenu.get_item("ttf_dbcs_sbcs").enable(TTF_using()&&!IS_PC98_ARCH&&!IS_JEGA_ARCH&&enable_dbcs_tables).check(dbcs_sbcs||IS_PC98_ARCH||IS_JEGA_ARCH).refresh_item(mainMenu);
+    mainMenu.get_item("ttf_autoboxdraw").enable(TTF_using()&&!IS_PC98_ARCH&&!IS_JEGA_ARCH&&enable_dbcs_tables).check(autoboxdraw||IS_PC98_ARCH||IS_JEGA_ARCH).refresh_item(mainMenu);
+    mainMenu.get_item("ttf_halfwidthkana").enable(TTF_using()&&!IS_PC98_ARCH&&!IS_JEGA_ARCH&&enable_dbcs_tables).check(halfwidthkana||IS_PC98_ARCH||IS_JEGA_ARCH).refresh_item(mainMenu);
 #endif
 
     if (output != 7) GFX_SetTitle((int32_t)(CPU_CycleAutoAdjust?CPU_CyclePercUsed:CPU_CycleMax),-1,-1,false);
@@ -4628,7 +4633,7 @@ void GFX_EndTextLines(bool force=false) {
                     uint8_t ascii = newAC[x].chr&255;
 
                     curAC[x] = newAC[x];
-                    if (ascii > 175 && ascii < 179 && !IS_PC98_ARCH && !(dos.loaded_codepage == 932 && halfwidthkana)) {	// special: shade characters 176-178 unless PC-98
+                    if (ascii > 175 && ascii < 179 && !IS_PC98_ARCH && !IS_JEGA_ARCH && !(dos.loaded_codepage == 932 && halfwidthkana)) {	// special: shade characters 176-178 unless PC-98
                         ttf_bgColor.b = (ttf_bgColor.b*(179-ascii) + ttf_fgColor.b*(ascii-175))>>2;
                         ttf_bgColor.g = (ttf_bgColor.g*(179-ascii) + ttf_fgColor.g*(ascii-175))>>2;
                         ttf_bgColor.r = (ttf_bgColor.r*(179-ascii) + ttf_fgColor.r*(ascii-175))>>2;
@@ -5028,7 +5033,11 @@ extern int eurAscii;
 extern bool enable_dbcs_tables;
 extern uint16_t cpMap_PC98[256];
 void initcodepagefont();
-bool forceswk=false, CodePageGuestToHostUTF16(uint16_t *d/*CROSS_LEN*/,const char *s/*CROSS_LEN*/);
+bool forceswk=false;
+std::map<int, int> lowboxdrawmap {
+    {1, 218}, {2, 191}, {3, 192}, {4, 217}, {5, 179}, {6, 196}, {0xe, 178},
+    {0x10, 197}, {0x14, 177}, {0x15, 193}, {0x16, 194}, {0x17, 180}, {0x19, 195}, {0x1a, 176},
+};
 int setTTFCodePage() {
     int cp = dos.loaded_codepage;
     if (IS_PC98_ARCH) {
@@ -5047,12 +5056,14 @@ int setTTFCodePage() {
             text[1]=0;
             uname[0]=0;
             uname[1]=0;
-            if (cp == 932 && halfwidthkana) forceswk=true;
+            if (cp == 932 && (halfwidthkana || IS_JEGA_ARCH)) forceswk=true;
             if (cp == 932 || cp == 936 || cp == 949 || cp == 950) dos.loaded_codepage = 437;
             CodePageGuestToHostUTF16(uname,text);
             if (cp == 932 || cp == 936 || cp == 949 || cp == 950) dos.loaded_codepage = cp;
-            forceswk=false;
             wcTest[i] = uname[1]==0?uname[0]:i;
+            forceswk=false;
+            if (cp == 932 && lowboxdrawmap.find(i)!=lowboxdrawmap.end() && TTF_GlyphIsProvided(ttf.SDL_font, wcTest[i]))
+                cpMap[i] = wcTest[i];
         }
         uint16_t unimap;
         int notMapped = 0;
@@ -7068,6 +7079,31 @@ bool GFX_IsFullscreen(void) {
     return sdl.desktop.fullscreen;
 }
 
+static bool CheckEnableImmOnKey(SDL_KeyboardEvent key)
+{
+	if(key.keysym.sym == 0 || key.keysym.sym == 0x08 || key.keysym.sym == 0x113 || key.keysym.sym == 0x114) {
+		// BS, <-, ->
+		return true;
+	}
+	if(key.keysym.scancode == 0x01 || key.keysym.scancode == 0x1d || key.keysym.scancode == 0x2a || key.keysym.scancode == 0x36 || key.keysym.scancode == 0x38) {
+		// ESC, shift,  control, alt
+		return true;
+	}
+	if(key.keysym.scancode >= 0x3b && key.keysym.scancode <= 0x44) {
+		// function
+		return true;
+	}
+	if(key.keysym.mod & 0x40) {
+		// ctrl+
+		return true;
+	}
+	if((key.keysym.mod & 0x03) != 0 && key.keysym.scancode == 0x39) {
+		// shift + space
+		return true;
+	}
+	return false;
+}
+
 bool sdl_wait_on_error() {
     return sdl.wait_on_error;
 }
@@ -7143,6 +7179,40 @@ void* GetSetSDLValue(int isget, std::string& target, void* setval) {
 
     return NULL;
 }
+
+#if defined(WIN32) && !defined(HX_DOS) && !defined(C_SDL2) && defined(SDL_DOSBOX_X_SPECIAL)
+static Bitu im_x, im_y;
+static uint32_t last_ticks;
+void SetIMPosition() {
+	uint8_t x, y;
+	uint8_t page = IS_PC98_ARCH?0:real_readb(BIOSMEM_SEG,BIOSMEM_CURRENT_PAGE);
+	INT10_GetCursorPos(&y, &x, page);
+    int nrows=25;
+	if (IS_PC98_ARCH)
+		nrows=real_readb(0x60,0x113) & 0x01 ? 25 : 20;
+	else
+		nrows=(IS_EGAVGA_ARCH?real_readb(BIOSMEM_SEG,BIOSMEM_NB_ROWS):24)+1;
+    if (y>=nrows-1) y=nrows-8;
+
+	if ((im_x != x || im_y != y) && GetTicks() - last_ticks > 100) {
+		last_ticks = GetTicks();
+		im_x = x;
+		im_y = y;
+#if defined(LINUX)
+		y++;
+#endif
+		uint8_t height = IS_PC98_ARCH?16:real_readb(BIOSMEM_SEG, BIOSMEM_CHAR_HEIGHT);
+#if defined(USE_TTF)
+        if (ttf.inUse)
+            SDL_SetIMPosition((x+1) * ttf.pointsize / 2, (y+1) * ttf.pointsize);
+        else
+#endif
+        SDL_SetIMPosition((x+1) * height / 2, (y+1) * height - (DOSV_CheckCJKVideoMode()?2:0));
+	}
+}
+#endif
+
+char *CodePageHostToGuest(const uint16_t *s);
 
 #if defined(C_SDL2) && !defined(IGNORE_TOUCHSCREEN)
 static void FingerToFakeMouseMotion(SDL_TouchFingerEvent * finger) {
@@ -7892,6 +7962,55 @@ void GFX_Events() {
             if (((event.key.keysym.sym == SDLK_TAB )) && (event.key.keysym.mod & KMOD_ALT)) break;
             // ignore tab events that arrive just after regaining focus. (likely the result of alt-tab)
             if ((event.key.keysym.sym == SDLK_TAB) && (GetTicks() - sdl.focus_ticks < 2)) break;
+#if !defined(HX_DOS) && defined(SDL_DOSBOX_X_SPECIAL)
+			int onoff;
+			if(SDL_GetIMValues(SDL_IM_ONOFF, &onoff, NULL) == NULL) {
+				if(onoff != 0 && event.type == SDL_KEYDOWN) {
+					if(event.key.keysym.sym == 0x0d) {
+						if(sdl.ime_ticks != 0) {
+							if(GetTicks() - sdl.ime_ticks < 10) {
+								sdl.ime_ticks = 0;
+								break;
+							}
+						}
+					} else if(!CheckEnableImmOnKey(event.key)) {
+						sdl.ime_ticks = 0;
+						break;
+					}
+				}
+			}
+			sdl.ime_ticks = 0;
+			if(event.key.keysym.scancode == 0 && event.key.keysym.sym == 0) {
+				int len;
+				if(len = SDL_FlushIMString(NULL)) {
+					uint16_t *buff = (uint16_t *)malloc((len + 2)), uname[2];
+					SDL_FlushIMString(buff);
+					SetIMPosition();
+					for(int no = 0 ; no < len ; no++) {
+                        unsigned char ch = (unsigned char)buff[no];
+                        if ((IS_PC98_ARCH || isDBCSCP()) && ch != buff[no]) {
+                            uname[0]=buff[no];
+                            uname[1]=0;
+                            int memNeeded = WideCharToMultiByte(dos.loaded_codepage, WC_NO_BEST_FIT_CHARS, (LPCWSTR)uname, -1, NULL, 0, "\x3F", NULL);
+                            char *chars = memNeeded <= 1 ? NULL : (char *)malloc(memNeeded);
+                            if (chars != NULL && WideCharToMultiByte(dos.loaded_codepage, WC_NO_BEST_FIT_CHARS, (LPCWSTR)uname, -1, (LPSTR)chars, memNeeded, "\x3F", NULL) == memNeeded) {
+                                for (size_t i=0; i<strlen(chars); i++) {
+                                    if (dos.loaded_codepage == 932 && strlen(chars) == 2 && isKanji1(chars[0]))
+                                        BIOS_AddKeyToBuffer((i==0?0xf100:0xf000) | (unsigned char)chars[i]);
+                                    else
+                                        BIOS_AddKeyToBuffer((unsigned char)chars[i]);
+                                }
+                                free(chars);
+                            } else
+                                BIOS_AddKeyToBuffer(ch);
+                        } else
+                                BIOS_AddKeyToBuffer(ch);
+					}
+					free(buff);
+					sdl.ime_ticks = GetTicks();
+				}
+			}
+#endif
 #endif
 #if defined (MACOSX)
             if (event.type == SDL_KEYDOWN && isModifierApplied())
@@ -7903,6 +8022,14 @@ void GFX_Events() {
             } 
 #endif
         default:
+#if defined(WIN32) && !defined(HX_DOS) && defined(SDL_DOSBOX_X_SPECIAL)
+            if(event.key.keysym.scancode == 0x70 || event.key.keysym.scancode == 0x94 || event.key.keysym.scancode == 0x3a) {
+                if(event.key.keysym.scancode == 0x94 && dos.im_enable_flag) {
+                    break;
+                }
+                event.type = SDL_KEYDOWN;
+            }
+#endif
             void MAPPER_CheckEvent(SDL_Event * event);
             MAPPER_CheckEvent(&event);
         }
@@ -12283,11 +12410,6 @@ int main(int argc, char* argv[]) SDL_MAIN_NOEXCEPT {
     sdl.srcAspect.xToY = (double)sdl.srcAspect.x / sdl.srcAspect.y;
     sdl.srcAspect.yToX = (double)sdl.srcAspect.y / sdl.srcAspect.x;
 
-#if defined(WIN32) && !defined(HX_DOS)
-    /* Microsoft's IME does not play nice with DOSBox */
-    ImmDisableIME((DWORD)(-1));
-#endif
-
 #if defined(MACOSX)
     /* The resource system of DOSBox-X relies on being able to locate the Resources subdirectory
        within the DOSBox-X .app bundle. To do this, we have to first know where our own executable
@@ -12456,7 +12578,7 @@ int main(int argc, char* argv[]) SDL_MAIN_NOEXCEPT {
             else
                 default_folder = NULL;
             const char *confirmstr = "Do you want to use the selected folder as the DOSBox-X working directory in future sessions?\n\nIf you select Yes, DOSBox-X will not prompt for a folder again.\nIf you select No, DOSBox-X will always prompt for a folder when it runs.\nIf you select Cancel, DOSBox-X will ask this question again next time.";
-            const char *quitstr = "You have not selected a valid path. Do you do want to run DOSBox-X with the current path as the DOSBox-X working directory?\n\nDOSBox-X will exit if you select No.";
+            const char *quitstr = "You have not selected a valid path. Do you want to run DOSBox-X with the current path as the DOSBox-X working directory?\n\nDOSBox-X will exit if you select No.";
 #if defined(MACOSX)
             std::string path = macosx_prompt_folder(default_folder);
             if (path.empty()) {
@@ -12925,6 +13047,26 @@ int main(int argc, char* argv[]) SDL_MAIN_NOEXCEPT {
             LOG_MSG("DOSBox-X's working directory: %s\n", cwd);
         else
             LOG(LOG_GUI, LOG_ERROR)("sdlmain.cpp main() failed to get the current working directory.");
+
+    const char *imestr = section->Get_string("ime");
+    enableime = !strcasecmp(imestr, "true") || !strcasecmp(imestr, "1");
+    if (!strcasecmp(imestr, "auto")) {
+        const char *machine = section->Get_string("machine");
+        if (!strcasecmp(machine, "pc98") || !strcasecmp(machine, "pc9801") || !strcasecmp(machine, "pc9821") || !strcasecmp(machine, "jega") || strcasecmp(static_cast<Section_prop *>(control->GetSection("dos"))->Get_string("dosv"), "off")) enableime = true;
+        else {
+            force_conversion = true;
+            int cp=dos.loaded_codepage;
+            if (InitCodePage() && isDBCSCP()) enableime = true;
+            force_conversion = false;
+            dos.loaded_codepage=cp;
+        }
+    }
+#if defined(WIN32) && (defined(C_SDL2) || !defined(SDL_DOSBOX_X_SPECIAL))
+    enableime = false;
+#endif
+#if defined(WIN32) && !defined(HX_DOS)
+        if (!enableime) ImmDisableIME((DWORD)(-1));
+#endif
     }
 
 #if (ENVIRON_LINKED)
@@ -12998,7 +13140,7 @@ int main(int argc, char* argv[]) SDL_MAIN_NOEXCEPT {
             if (id == 1) menu.compatible=true;
 
             /* use all variables to shut up the compiler about unused vars */
-            LOG(LOG_MISC,LOG_DEBUG)("DOSBox_CheckOS results: id=%u major=%u minor=%u",id,major,minor);
+            LOG(LOG_MISC,LOG_DEBUG)("DOSBox-X CheckOS results: id=%u major=%u minor=%u",id,major,minor);
         }
 #endif
 
@@ -14055,9 +14197,9 @@ int main(int argc, char* argv[]) SDL_MAIN_NOEXCEPT {
 #if C_PRINTER
         mainMenu.get_item("ttf_printfont").enable(TTF_using()).check(printfont);
 #endif
-        mainMenu.get_item("ttf_dbcs_sbcs").enable(TTF_using()&&!IS_PC98_ARCH&&enable_dbcs_tables).check(dbcs_sbcs);
-        mainMenu.get_item("ttf_autoboxdraw").enable(TTF_using()&&!IS_PC98_ARCH&&enable_dbcs_tables).check(autoboxdraw);
-        mainMenu.get_item("ttf_halfwidthkana").enable(TTF_using()&&!IS_PC98_ARCH&&enable_dbcs_tables).check(halfwidthkana);
+        mainMenu.get_item("ttf_dbcs_sbcs").enable(TTF_using()&&!IS_PC98_ARCH&&!IS_JEGA_ARCH&&enable_dbcs_tables).check(dbcs_sbcs||IS_PC98_ARCH||IS_JEGA_ARCH);
+        mainMenu.get_item("ttf_autoboxdraw").enable(TTF_using()&&!IS_PC98_ARCH&&!IS_JEGA_ARCH&&enable_dbcs_tables).check(autoboxdraw||IS_PC98_ARCH||IS_JEGA_ARCH);
+        mainMenu.get_item("ttf_halfwidthkana").enable(TTF_using()&&!IS_PC98_ARCH&&!IS_JEGA_ARCH&&enable_dbcs_tables).check(halfwidthkana||IS_PC98_ARCH||IS_JEGA_ARCH);
 #endif
 #if C_PRINTER
         mainMenu.get_item("print_textscreen").enable(!IS_PC98_ARCH);
@@ -14543,6 +14685,13 @@ fresh_boot:
 #endif
 
     sticky_keys(true); //Might not be needed if the shutdown function switches to windowed mode, but it doesn't hurt
+
+#if defined(WIN32) && !defined(HX_DOS) && !defined(C_SDL2) && defined(SDL_DOSBOX_X_SPECIAL)
+    if (!control->opt_silent) {
+        SDL_SetIMValues(SDL_IM_ONOFF, 0, NULL);
+        SDL_SetIMValues(SDL_IM_ENABLE, 0, NULL);
+    }
+#endif
 
     //Force visible mouse to end user. Somehow this sometimes doesn't happen
 #if defined(C_SDL2)

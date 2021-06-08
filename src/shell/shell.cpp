@@ -31,6 +31,7 @@
 #include "builtin.h"
 #include "mapper.h"
 #include "render.h"
+#include "jfont.h"
 #include "../dos/drives.h"
 #include "../ints/int10.h"
 #include <unistd.h>
@@ -47,17 +48,22 @@
 
 extern bool startcmd, startwait, startquiet, winautorun;
 extern bool dos_shell_running_program, mountwarning;
-extern bool addovl, addipx;
+extern bool halfwidthkana, force_conversion;
+extern bool addovl, addipx, enableime;
 extern const char* RunningProgram;
 extern uint16_t countryNo;
 extern int enablelfn;
 bool usecon = true;
+bool shellrun = false;
 
 uint16_t shell_psp = 0;
 Bitu call_int2e = 0;
 
 std::string GetDOSBoxXPath(bool withexe=false);
+void SetIMPosition(void);
+bool InitCodePage(void);
 void initRand();
+void initcodepagefont(void);
 void runMount(const char *str);
 void ResolvePath(std::string& in);
 void DOS_SetCountry(uint16_t countryNo);
@@ -514,10 +520,30 @@ const char *ParseMsg(const char *msg) {
         else if (theme == "white")
             msg = str_replace(str_replace((char *)msg, "\033[36m", "\033[34m"), "\033[44;1m", "\033[47;1m");
     }
-    if (machine == MCH_PC98 || real_readw(BIOSMEM_SEG,BIOSMEM_NB_COLS)<=80)
+    if (machine == MCH_PC98)
         return msg;
-    else
-        return str_replace(str_replace(str_replace((char *)msg, (char*)"\xBA\033[0m", (char*)"\xBA\033[0m\n"), (char*)"\xBB\033[0m", (char*)"\xBB\033[0m\n"), (char*)"\xBC\033[0m", (char*)"\xBC\033[0m\n");
+    else {
+        if (real_readw(BIOSMEM_SEG,BIOSMEM_NB_COLS)>80)
+            msg = str_replace(str_replace(str_replace((char *)msg, (char*)"\xBA\033[0m", (char*)"\xBA\033[0m\n"), (char*)"\xBB\033[0m", (char*)"\xBB\033[0m\n"), (char*)"\xBC\033[0m", (char*)"\xBC\033[0m\n");
+        bool uselowbox = false;
+#if defined(USE_TTF)
+        force_conversion = true;
+        int cp=dos.loaded_codepage;
+        if (ttf.inUse && halfwidthkana && InitCodePage() && dos.loaded_codepage==932) uselowbox = true;
+        force_conversion = false;
+        dos.loaded_codepage=cp;
+#endif
+        if (uselowbox || IS_JEGA_ARCH || IS_JDOSV) {
+            std::string m=msg;
+            msg = str_replace((char *)msg, "\xC9", (char *)std::string(1, 1).c_str());
+            msg = str_replace((char *)msg, "\xBB", (char *)std::string(1, 2).c_str());
+            msg = str_replace((char *)msg, "\xC8", (char *)std::string(1, 3).c_str());
+            msg = str_replace((char *)msg, "\xBC", (char *)std::string(1, 4).c_str());
+            msg = str_replace((char *)msg, "\xBA", (char *)std::string(1, 5).c_str());
+            msg = str_replace((char *)msg, "\xCD", (char *)std::string(1, 6).c_str());
+        }
+        return msg;
+    }
 }
 
 static char const * const path_string="PATH=Z:\\;Z:\\SYSTEM;Z:\\BIN;Z:\\DOS;Z:\\4DOS;Z:\\DEBUG;Z:\\TEXTUTIL";
@@ -526,13 +552,10 @@ static char const * const prompt_string="PROMPT=$P$G";
 static char const * const full_name="Z:\\COMMAND.COM";
 static char const * const init_line="/INIT AUTOEXEC.BAT";
 
-bool shellrun=false;
-bool InitCodePage(void);
-void initcodepagefont(void);
 void DOS_Shell::Prepare(void) {
     if (this == first_shell) {
         Section_prop *section = static_cast<Section_prop *>(control->GetSection("dosbox"));
-        if(section->Get_bool("startbanner")&&!control->opt_fastlaunch) {
+        if (section->Get_bool("startbanner")&&!control->opt_fastlaunch) {
             /* Start a normal shell and check for a first command init */
             std::string verstr = "v"+std::string(VERSION)+", "+GetPlatform(false);
             if (machine == MCH_PC98) {
@@ -597,7 +620,7 @@ void DOS_Shell::Prepare(void) {
 #if defined(WIN32)
 			char buffer[128];
 #endif
-            if (IS_PC98_ARCH)
+            if (IS_PC98_ARCH || IS_JEGA_ARCH)
                 countryNo = 81;
 #if defined(WIN32)
 			else if (GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_ICOUNTRY, buffer, 128)) {
@@ -610,7 +633,7 @@ void DOS_Shell::Prepare(void) {
 		}
 		strcpy(config_data, "");
 		section = static_cast<Section_prop *>(control->GetSection("config"));
-		if (section!=NULL&&!control->opt_noconfig&&!control->opt_securemode&&!control->SecureMode()) {
+		if (section!=NULL&&!control->opt_noconfig) {
 			char *countrystr = (char *)section->Get_string("country"), *r=strchr(countrystr, ',');
 			int country = 0;
 			if (r==NULL || !*(r+1))
@@ -620,7 +643,7 @@ void DOS_Shell::Prepare(void) {
 				country = atoi(trim(countrystr));
 				int newCP = atoi(trim(r+1));
 				*r=',';
-                if (!IS_PC98_ARCH) {
+                if (!IS_PC98_ARCH&&!IS_JEGA_ARCH) {
 #if defined(USE_TTF)
                     if (ttf.inUse) {
                         if (newCP) toSetCodePage(this, newCP, control->opt_fastlaunch?1:0);
@@ -640,7 +663,7 @@ void DOS_Shell::Prepare(void) {
 				DOS_SetCountry(countryNo);
 			}
 			const char * extra = section->data.c_str();
-			if (extra) {
+			if (extra&&!control->opt_securemode&&!control->SecureMode()) {
 				std::string vstr;
 				std::istringstream in(extra);
 				char linestr[CROSS_LEN+1], cmdstr[CROSS_LEN], valstr[CROSS_LEN], tmpstr[CROSS_LEN];
@@ -736,6 +759,9 @@ void DOS_Shell::Prepare(void) {
         initcodepagefont();
         dos.loaded_codepage=cp;
     }
+#if defined(WIN32) && !defined(HX_DOS) && !defined(C_SDL2) && defined(SDL_DOSBOX_X_SPECIAL)
+    if (enableime) SetIMPosition();
+#endif
 }
 
 void DOS_Shell::Run(void) {

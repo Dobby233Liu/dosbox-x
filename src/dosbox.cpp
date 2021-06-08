@@ -137,7 +137,7 @@ extern bool         VIDEO_BIOS_always_carry_14_high_font;
 extern bool         VIDEO_BIOS_always_carry_16_high_font;
 extern bool         VIDEO_BIOS_enable_CGA_8x8_second_half;
 extern bool         allow_more_than_640kb;
-extern bool         sync_time;
+extern bool         sync_time, enableime;
 extern int          freesizecap;
 extern unsigned int page;
 
@@ -1046,6 +1046,16 @@ void DOSBOX_RealInit() {
         JFONT_Init();  // Load DBCS fonts for JEGA
         if (IS_DOSV) DOSV_SetConfig(dos_section);
     }
+#if defined(WIN32) && !defined(HX_DOS) && !defined(C_SDL2) && defined(SDL_DOSBOX_X_SPECIAL)
+    if (enableime && !control->opt_silent) {
+        dos.im_enable_flag = true;
+        SDL_SetIMValues(SDL_IM_ENABLE, 1, NULL);
+        SDL_EnableUNICODE(1);
+    } else if (!control->opt_silent) {
+        dos.im_enable_flag = false;
+        SDL_SetIMValues(SDL_IM_ENABLE, 0, NULL);
+    }
+#endif
 #if defined(USE_TTF)
     if (IS_PC98_ARCH) ttf.cols = 80; // The number of columns on the screen is apparently fixed to 80 in PC-98 mode at this time
 #endif
@@ -1361,6 +1371,12 @@ void DOSBOX_SetupConfigSections(void) {
     Pstring = secprop->Add_string("mapper send key", Property::Changeable::Always, "ctrlaltdel");
     Pstring->Set_help("Select the key the mapper SendKey function will send.");
     Pstring->Set_values(sendkeys);
+    Pstring->SetBasic(true);
+
+    Pstring = secprop->Add_string("ime",Property::Changeable::OnlyAtStart,"auto");
+    Pstring->Set_help("Enables support for the system input methods (IME) for inputting characters in Windows SDL1 builds.\n"
+                      "If set to auto, this feature is only enabled if DOSBox-X starts with a Chinese/Japanese/Korean code page.");
+    Pstring->Set_values(truefalseautoopt);
     Pstring->SetBasic(true);
 
     Pbool = secprop->Add_bool("synchronize time", Property::Changeable::Always, false);
@@ -2417,7 +2433,7 @@ void DOSBOX_SetupConfigSections(void) {
                     "Only applicable when using a DBCS code page (932: Japanese, 936: Simplified Chinese; 949: Korean; 950: Traditional Chinese)\n"
                     "This applies to both the display and printing of these characters (see the [printer] section for details of the latter).");
 
-	Pbool = secprop->Add_bool("ttf.halfwidthkana", Property::Changeable::WhenIdle, false);
+	Pbool = secprop->Add_bool("ttf.halfwidthkana", Property::Changeable::WhenIdle, true);
     Pbool->Set_help("If set, DOSBox-X enables half-width Katakana to replace upper ASCII characters for the Japanese code page (932) of a non-PC98 machine type in the TTF output.");
 
 	Pstring = secprop->Add_string("ttf.blinkc", Property::Changeable::Always, "true");
@@ -2604,6 +2620,7 @@ void DOSBOX_SetupConfigSections(void) {
     Pbool->Set_help("If set (default), allow the application to reset the CPU through the keyboard controller.\n"
             "This option is required to allow Windows ME to reboot properly, whereas Windows 9x and earlier\n"
             "will reboot without this option using INT 19h");
+    Pbool->SetBasic(true);
 
     Pstring = secprop->Add_string("controllertype",Property::Changeable::OnlyAtStart,"auto");
     Pstring->Set_values(controllertypes);
@@ -2629,7 +2646,9 @@ void DOSBOX_SetupConfigSections(void) {
 	Pbool = secprop->Add_bool("voodoo_maxmem",Property::Changeable::OnlyAtStart,true);
 	Pbool->Set_help("Specify whether to enable maximum memory size for the Voodoo card.\n"
                     "If set (on by default), the memory size will be 12MB (4MB front buffer + 2x4MB texture units)\n"
-		            "Otherwise, the memory size will be the standard 4MB (2MB front buffer + 1x2MB texture unit)");
+                    "Otherwise, the memory size will be the standard 4MB (2MB front buffer + 1x2MB texture unit)");
+    Pbool->SetBasic(true);
+
 	Pbool = secprop->Add_bool("glide",Property::Changeable::WhenIdle,false);
 	Pbool->Set_help("Enable Glide emulation (Glide API passthrough to the host).\n"
                     "Requires a Glide wrapper - glide2x.dll (Windows), libglide2x.so (Linux), or libglide2x.dylib (macOS).");
@@ -2640,6 +2659,8 @@ void DOSBOX_SetupConfigSections(void) {
 	Pstring = secprop->Add_string("lfb",Property::Changeable::WhenIdle,"full_noaux");
 	Pstring->Set_values(lfb);
 	Pstring->Set_help("Enable LFB access for Glide. OpenGlide does not support locking aux buffer, please use _noaux modes.");
+	Pstring->SetBasic(true);
+
 	Pbool = secprop->Add_bool("splash",Property::Changeable::WhenIdle,true);
 	Pbool->Set_help("Show 3dfx splash screen for Glide emulation (Windows; requires 3dfxSpl2.dll).");
     Pbool->SetBasic(true);
@@ -2650,9 +2671,10 @@ void DOSBOX_SetupConfigSections(void) {
     Pbool->SetBasic(true);
 
     Pbool = secprop->Add_bool("sample accurate",Property::Changeable::OnlyAtStart,false);
-    Pbool->Set_help("Enable sample accurate mixing, at the expense of some emulation performance. Enable this option for DOS games and demos that\n"
-            "require such accuracy for correct Tandy/OPL output including digitized speech. This option can also help eliminate minor\n"
-            "errors in Gravis Ultrasound emulation that result in random echo/attenuation effects.");
+    Pbool->Set_help("Enable sample accurate mixing, at the expense of some emulation performance. Enable this option for DOS games and demos\n"
+            "that require such accuracy for correct Tandy/OPL output including digitized speech. This option can also help eliminate\n"
+            "minor errors in Gravis Ultrasound emulation that result in random echo/attenuation effects.");
+    Pbool->SetBasic(true);
 
     Pbool = secprop->Add_bool("swapstereo",Property::Changeable::OnlyAtStart,false);
     Pbool->Set_help("Swaps the left and right stereo channels.");
@@ -2671,6 +2693,7 @@ void DOSBOX_SetupConfigSections(void) {
     Pint = secprop->Add_int("prebuffer",Property::Changeable::OnlyAtStart,25);
     Pint->SetMinMax(0,250);
     Pint->Set_help("How many milliseconds of data to keep on top of the blocksize.");
+    Pint->SetBasic(true);
 
     secprop=control->AddSection_prop("midi",&Null_Init,true);//done
 
@@ -4095,8 +4118,8 @@ void DOSBOX_SetupConfigSections(void) {
     Pstring->Set_help("The MAC address the emulator will use for its network adapter.\n"
         "If you have multiple DOSBox-Xes running on the same network,\n"
         "this has to be changed for each. AC:DE:48 is an address range reserved for\n"
-        "private use, so modify the last three number blocks.\n"
-        "I.e. AC:DE:48:88:99:AB.");
+        "private use, so modify the last three number blocks, e.g. AC:DE:48:88:99:AB.");
+    Pstring->SetBasic(true);
 
     Pstring = secprop->Add_string("backend", Property::Changeable::WhenIdle, "auto");
     Pstring->Set_help("The backend (either pcap or slirp is supported) used for the NE2000 Ethernet emulation.\n"
@@ -4117,6 +4140,7 @@ void DOSBOX_SetupConfigSections(void) {
 
     Pstring = secprop->Add_string("timeout", Property::Changeable::WhenIdle,"default");
     Pstring->Set_help("Specifies the read timeout for the device in milliseconds for the pcap backend, or the default value will be used.");
+    Pstring->SetBasic(true);
 
     secprop = control->AddSection_prop("ethernet, slirp", &Null_Init, true);
 
@@ -4363,6 +4387,7 @@ void DOSBOX_SetupConfigSections(void) {
             "# They are used to (briefly) document the effect of each option.\n"
         "# To write out ALL options, use command 'config -all' with -wc or -writeconf options.\n");
     MSG_Add("CONFIG_SUGGESTED_VALUES", "Possible values");
+    MSG_Add("CONFIG_ADVANCED_OPTION", "Advanced options (see full configuration reference file [dosbox-x.reference.full.conf] for more details)");
     MSG_Add("DRIVE","Drive");
     MSG_Add("TYPE","Type");
     MSG_Add("LABEL","Label");

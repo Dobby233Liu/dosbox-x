@@ -26,6 +26,7 @@
 #include "setup.h"
 #include "control.h"
 #include "menu.h"
+#include "jfont.h"
 #include <list>
 #include <string>
 using namespace std;
@@ -76,7 +77,7 @@ void MSG_Replace(const char * _name, const char* _val) {
 bool InitCodePage() {
     if (!dos.loaded_codepage || dos_kernel_disabled || force_conversion) {
         Section_prop *section = static_cast<Section_prop *>(control->GetSection("config"));
-        if (section!=NULL) {
+        if (section!=NULL && !control->opt_noconfig) {
             char *countrystr = (char *)section->Get_string("country"), *r=strchr(countrystr, ',');
             if (r!=NULL && *(r+1)) {
                 int cp = atoi(trim(r+1));
@@ -92,7 +93,7 @@ bool InitCodePage() {
         }
     }
     if (!dos.loaded_codepage) {
-        dos.loaded_codepage = IS_PC98_ARCH?932:437;
+        dos.loaded_codepage = IS_PC98_ARCH||IS_JEGA_ARCH?932:437;
         return false;
     } else
         return true;

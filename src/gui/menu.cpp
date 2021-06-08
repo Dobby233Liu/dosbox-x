@@ -32,6 +32,7 @@
 #include "timer.h"
 #include "inout.h"
 #include "shell.h"
+#include "jfont.h"
 
 #if DOSBOXMENU_TYPE == DOSBOXMENU_SDLDRAW
 unsigned int min_sdldraw_menu_width = 500;
@@ -1189,14 +1190,14 @@ LPWSTR getWString(std::string str, wchar_t *def, wchar_t*& buffer) {
     LPWSTR ret = def;
     int reqsize = 0, cp = dos.loaded_codepage;
     Section_prop *section = static_cast<Section_prop *>(control->GetSection("config"));
-    if ((!dos.loaded_codepage || dos_kernel_disabled || force_conversion) && section!=NULL) {
+    if ((!dos.loaded_codepage || dos_kernel_disabled || force_conversion) && section!=NULL && !control->opt_noconfig) {
         char *countrystr = (char *)section->Get_string("country"), *r=strchr(countrystr, ',');
         if (r!=NULL && *(r+1)) {
             cp = atoi(trim(r+1));
             if ((cp<1 || !isSupportedCP(cp)) && msgcodepage>0) cp = msgcodepage;
         } else if (msgcodepage>0)
             cp = msgcodepage;
-        if ((cp<1 || !isSupportedCP(cp)) && IS_PC98_ARCH) cp = 932;
+        if ((cp<1 || !isSupportedCP(cp)) && (IS_PC98_ARCH || IS_JEGA_ARCH)) cp = 932;
     }
     uint16_t len=(uint16_t)str.size();
     if (cp>0) {
