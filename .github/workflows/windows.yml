@@ -22,14 +22,14 @@ jobs:
       - run: perl update-build-timestamp.pl
         name: Update build timestamp
         
-      - uses: microsoft/setup-msbuild@c26a08ba26249b81327e26f6ef381897b6a8754d # commit hash because 1.0.2
+      - uses: microsoft/setup-msbuild@c26a08ba26249b81327e26f6ef381897b6a8754d # 1.0.2
         name: Init MSBuild
         
-      # FIXME: this does not work as excepted
+      # FIXME: this does not work as excepted. probs solution quirk
       - name: Cache IPDBs
         uses: actions/cache@v2
         with:
-          key: vs-${{ matrix.arch }}-${{ matrix.type }}-buildcache
+          key: vs-${{ matrix.arch }}-${{ matrix.type }}-index
           path: |
             bin/${{ matrix.arch }}/${{ matrix.type }}/*.exp
             bin/${{ matrix.arch }}/${{ matrix.type }}/*.lib
@@ -85,6 +85,7 @@ jobs:
           asset_path: ./build.zip
           asset_name: ${{ steps.zipname.outputs.zipname }}
           asset_content_type: application/zip
+          
   mingw:
     name: Build with MSYS2
     runs-on: windows-latest
@@ -99,13 +100,13 @@ jobs:
       run:
         shell: msys2 {0}
     env:
-      # Which revision of ffmpeg (a git ref)
+      # Which revision of ffmpeg (read: a git ref)
       # to build for the workaround
       # see ffmpeg git repo
-      ffmpeg-release: releases/4.4
+      ffmpeg-release: release/4.4
       
     steps:
-      - name: Temporarily decide MSYSTEM_CARCH
+      - name: Define temporary MSYSTEM_CARCH-ish variable
         shell: powershell
         id: carch
         env:
@@ -139,15 +140,13 @@ jobs:
         if: matrix.type == '-sdl2'
         run: pacman --noconfirm --needed -S mingw-w64-$MSYSTEM_CARCH-SDL2 mingw-w64-$MSYSTEM_CARCH-SDL2_net
         
-      # NTS: msys2's ffmpeg package is currently broken (by a lot!),
-      # so build it ourselves
-      # hn: Do we need to install ffmpeg for lowend?
+      # NTS: msys2's ffmpeg package is currently broken (by a lot!)
       - name: Cache ffmpeg
         id: cache-ffmpeg
         uses: actions/cache@v2
         with:
           path: ${{ github.workspace }}\ffmpeg
-          key: msys2-mingw-ffmpeg-${{ env.ffmpeg-release }}${{ matrix.type }}
+          key: mingwlib-ffmpeg-${{ env.ffmpeg-release }}${{ matrix.type }}
       - name: Clone ffmpeg
         if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
@@ -228,6 +227,7 @@ jobs:
           asset_path: ./build.zip
           asset_name: dosbox-x-mingw-win${{ matrix.arch }}${{ matrix.type }}.zip
           asset_content_type: application/zip
+          
   installer: # (Wengier)
     name: Build Inno Setup installer
     runs-on: windows-latest
@@ -245,7 +245,7 @@ jobs:
       - name: Download builds
         uses: actions/download-artifact@v2
         
-      - name: Prepare directories
+      - name: Prepare directories (mkdir)
         working-directory: ${{ env.SETUP_DIR }}
         run: |
           mkdir Win32_builds
