@@ -140,6 +140,9 @@ jobs:
       - name: Install SDL2
         if: matrix.type == '-sdl2'
         run: pacman --noconfirm --needed -S mingw-w64-$MSYSTEM_CARCH-SDL2 mingw-w64-$MSYSTEM_CARCH-SDL2_net
+  
+      - uses: actions/checkout@v2
+        name: Checkout repo # fix
         
       # NTS: msys2's ffmpeg package is currently broken (by a lot!)
       - name: Cache ffmpeg
@@ -147,7 +150,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ github.workspace }}\ffmpeg
-          key: mingwlib-ffmpeg-${{ env.ffmpeg-release }}${{ matrix.type }}
+          key: mingw-lib-ffmpeg-${{ env.ffmpeg-release }}${{ matrix.type }}
       - name: Clone ffmpeg
         if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
@@ -186,9 +189,6 @@ jobs:
           mv /mingw${{ matrix.arch }}/bin/*.lib /mingw${{ matrix.arch }}/lib/
           PREFIX_DEPS=`cygpath -am /mingw${{ matrix.arch }}`
           find /mingw${{ matrix.arch }}/lib/pkgconfig -name *.pc -exec sed -i -e"s|${PREFIX_DEPS}|/mingw${{ matrix.arch }}|g" {} \;
-        
-      - uses: actions/checkout@v2
-        name: Checkout repo
         
       - run: perl update-build-timestamp.pl
         name: Update build timestamp
