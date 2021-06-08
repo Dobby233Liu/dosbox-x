@@ -161,7 +161,7 @@ jobs:
         working-directory: ${{ github.workspace }}\ffmpeg
         run: |
           git config core.fileMode true
-          git reset --hard ${{ env.ffmpeg-ref-type }}${{ env.ffmpeg-version }}
+          git reset --hard ${{ env.ffmpeg-ref-type }}${{ env.ffmpeg-release }}
           # NTS: update when vcpkg updates ffmpeg
           pfiles="0001-create-lib-libraries.patch 0003-fix-windowsinclude.patch 0004-fix-debug-build.patch 0006-fix-StaticFeatures.patch 0007-fix-lib-naming.patch 0009-Fix-fdk-detection.patch 0010-Fix-x264-detection.patch 0011-Fix-x265-detection.patch 0012-Fix-ssl-110-detection.patch 0013-define-WINVER.patch 0014-avfilter-dependency-fix.patch 0015-Fix-xml2-detection.patch 0016-configure-dnn-needs-avformat.patch"
           for file in $pfiles
