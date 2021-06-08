@@ -160,14 +160,16 @@ jobs:
         working-directory: ${{ github.workspace }}\ffmpeg
         run: |
           git config core.fileMode true
-          git reset --hard refs/tags/n${{ env.ffmpeg-release }}
+          refid=`git show-ref --hash -- ${{ env.ffmpeg-release }}`
+          echo "Reloading $refid"
+          git reset --hard $refid
           # NTS: update when vcpkg updates ffmpeg
           pfiles="0001-create-lib-libraries.patch 0003-fix-windowsinclude.patch 0004-fix-debug-build.patch 0006-fix-StaticFeatures.patch 0007-fix-lib-naming.patch 0009-Fix-fdk-detection.patch 0010-Fix-x264-detection.patch 0011-Fix-x265-detection.patch 0012-Fix-ssl-110-detection.patch 0013-define-WINVER.patch 0014-avfilter-dependency-fix.patch 0015-Fix-xml2-detection.patch 0016-configure-dnn-needs-avformat.patch"
           for file in $pfiles
           do
-            echo "downloading $file"
+            echo "Downloading patch $file"
             wget -q "https://raw.githubusercontent.com/microsoft/vcpkg/c4fedf081dcd0931e2aaab5ab1afa21e31a94e6d/ports/ffmpeg/$file"
-            echo "patching"
+            echo "Patching"
             git apply $file
           done
       - name: Build ffmpeg
