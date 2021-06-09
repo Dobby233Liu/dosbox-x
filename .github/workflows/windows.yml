@@ -150,7 +150,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ github.workspace }}\ffmpeg
-          key: mingw-lib-ffmpeg-${{ env.ffmpeg-release }}${{ matrix.type }}
+          key: mingw-lib-ffmpeg-${{ env.ffmpeg-release }}${{ matrix.type }}-${{ matrix.arch }}
       - name: Clone ffmpeg
         if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
@@ -180,7 +180,7 @@ jobs:
         run: |
           CFLAGS+=" -DWIN32"
           CXXFLAGS+=" -DWIN32"
-          ./configure --disable-network --enable-small --target-os=mingw${{ matrix.arch }} --arch=$MSYSTEM_CARCH --enable-gpl --enable-version3 --disable-debug --enable-pic --prefix=/mingw${{ matrix.arch }} --disable-programs --enable-static --enable-shared --enable-runtime-cpudetect --disable-doc
+          ./configure --disable-sdl2 --disable-network --enable-small --target-os=mingw${{ matrix.arch }} --arch=$MSYSTEM_CARCH --enable-gpl --enable-version3 --disable-debug --enable-pic --prefix=/mingw${{ matrix.arch }} --disable-programs --enable-static --enable-shared --enable-runtime-cpudetect --disable-doc
           make -j
       - name: Install ffmpeg
         working-directory: ${{ github.workspace }}\ffmpeg
