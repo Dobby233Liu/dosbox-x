@@ -202,8 +202,8 @@ jobs:
         uses: actions/upload-artifact@v2
         if: failure()
         with:
-          path: vs2015/sdlnet/config.log
-          name: debug
+          path: vs2015/sdlnet/linux-build/config.log
+          name: debug-${{ matrix.arch }}${{ matrix.type }}
           
       - name: Pack zip
         run: |
