@@ -136,6 +136,7 @@ jobs:
             mingw-w64-${{ steps.carch.outputs.carch }}-libslirp
             mingw-w64-${{ steps.carch.outputs.carch }}-freetype
             yasm
+            nasm
       # MSYS2 is installed, use internal variable
       - name: Install SDL2
         if: matrix.type == '-sdl2'
