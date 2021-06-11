@@ -198,12 +198,6 @@ jobs:
         run: |
           chmod +x $EXE_FILE
           ./$EXE_FILE
-      - name: DEBUG
-        uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          path: vs2015/sdlnet/linux-build/config.log
-          name: debug-${{ matrix.arch }}${{ matrix.type }}
           
       - name: Pack zip
         run: |
