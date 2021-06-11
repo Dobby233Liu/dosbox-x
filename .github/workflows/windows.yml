@@ -1,4 +1,4 @@
-name: Build for Windows (or HX-DOS Extender)
+name: Build for Windows & HX-DOS Extender
 on:
   push:
   pull_request:
@@ -198,6 +198,12 @@ jobs:
         run: |
           chmod +x $EXE_FILE
           ./$EXE_FILE
+      - name: DEBUG
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          path: vs2015/sdlnet/config.log
+          name: debug
           
       - name: Pack zip
         run: |
