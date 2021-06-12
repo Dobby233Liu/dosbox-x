@@ -230,6 +230,9 @@ jobs:
           asset_name: dosbox-x-mingw-win${{ matrix.arch }}${{ matrix.type }}.zip
           asset_content_type: application/zip
           
+  # TODO: add HX-DOS
+  # also put LOADLIN into linux.yml if possible
+          
   installer: # (Wengier)
     name: Build Inno Setup installer
     runs-on: windows-latest
@@ -247,6 +250,7 @@ jobs:
       - name: Download builds
         uses: actions/download-artifact@v2
         
+      # Please change the following steps if the artifact naming changed
       - name: Prepare directories (mkdir)
         working-directory: ${{ env.SETUP_DIR }}
         run: |
