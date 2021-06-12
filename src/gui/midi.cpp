@@ -25,6 +25,7 @@
 #include "SDL.h"
 
 #include "dosbox.h"
+#include "logging.h"
 #include "midi.h"
 #include "control.h"
 #include "cross.h"
