@@ -2495,14 +2495,10 @@ void MenuDrawTextChar(int &x,int y,unsigned char c,Bitu color,bool check) {
             } else if (isKanji2(c) && prevc > 1) {
                 bmp = GetDbcsFont(prevc*0x100+c);
                 prevc = 1;
-            } else
+            } else if (prevc < 0x81)
                 prevc = 0;
         } else
             prevc = 0;
-        if (font_16_init&&dos.loaded_codepage&&dos.loaded_codepage!=437&&!check&&!prevc)
-            bmp = (unsigned char*)int10_font_16_init + (c * fontHeight);
-        else if (!prevc)
-            bmp = (unsigned char*)int10_font_16 + (c * fontHeight);
 
         assert(sdl.surface->pixels != NULL);
 
@@ -2514,12 +2510,17 @@ void MenuDrawTextChar(int &x,int y,unsigned char c,Bitu color,bool check) {
             return;
 
         for (int i=0; i<(prevc?2:1); i++) {
+            if (font_16_init&&dos.loaded_codepage&&dos.loaded_codepage!=437&&!check&&prevc!=1)
+                bmp = (unsigned char*)int10_font_16_init + ((i||!prevc?c:prevc) * fontHeight);
+            else if (prevc!=1)
+                bmp = (unsigned char*)int10_font_16 + ((i||!prevc?c:prevc) * fontHeight);
+
             scan  = (unsigned char*)sdl.surface->pixels;
             scan += (unsigned int)y * (unsigned int)sdl.surface->pitch;
             scan += (unsigned int)x * (((unsigned int)sdl.surface->format->BitsPerPixel+7u)/8u);
 
             for (unsigned int row=0;row < fontHeight;row++) {
-                unsigned char rb = bmp[prevc?(row*2+i):row];
+                unsigned char rb = bmp[prevc==1?(row*2+i):row];
 
                 if (sdl.surface->format->BitsPerPixel == 32) {
                     uint32_t *dp = (uint32_t*)scan;
@@ -2790,7 +2791,10 @@ void GFX_DrawSDLMenu(DOSBoxMenu &menu, DOSBoxMenu::displaylist &dl) {
         SDL_UnlockSurface(sdl.surface);
     }
 
+    int cp = dos.loaded_codepage;
+    if (!cp) InitCodePage();
     if (IS_PC98_ARCH || IS_JEGA_ARCH || isDBCSCP()) InitFontHandle();
+    dos.loaded_codepage = cp;
 #if 0
     LOG_MSG("menudraw %u",(unsigned int)SDL_GetTicks());
 #endif
@@ -14492,7 +14496,7 @@ fresh_boot:
 
         if (dos_kernel_shutdown) {
 
-            if (!IS_PC98_ARCH&&dos.loaded_codepage!=437) dos.loaded_codepage=437;
+            if (!IS_PC98_ARCH&&!IS_JEGA_ARCH&&dos.loaded_codepage!=437) dos.loaded_codepage=437;
 
             /* NTS: we take different paths depending on whether we're just shutting down DOS
              *      or doing a hard reboot. */
