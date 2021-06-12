@@ -238,6 +238,9 @@ jobs:
     runs-on: windows-latest
 
     needs: [vsbuild, mingw] # sources
+    # running it on every commit is wasteful
+    # only run on release
+    if: github.event_name == 'release'
     
     env:
       SETUP_DIR: ${{ github.workspace }}\contrib\windows\installer
@@ -276,6 +279,7 @@ jobs:
               $orig = $_orig + $sub[$sub_i]
               $dest = $_dest + $sub_conv[$sub_i]
               Write-Host "$orig -> $dest"
+              Write-Host " "
               mkdir -Force $dest
               $copy_what = @("dosbox-x.exe", "dosbox-x.reference.conf", "dosbox-x.reference.full.conf")
               foreach ($file in $copy_what)
@@ -288,6 +292,7 @@ jobs:
               {
                 ./PatchPE.exe $dest\dosbox-x.exe
               }
+              Write-Host " "
             }
           }
       - name: Prepare directories (MinGW)
@@ -309,6 +314,7 @@ jobs:
               $orig = $_orig + $sub[$sub_i]
               $dest = $_dest + $sub[$sub_i]
               Write-Host "$orig -> $dest"
+              Write-Host " "
               mkdir -Force $dest
               $copy_what = @("dosbox-x.exe", "dosbox-x.reference.conf", "dosbox-x.reference.full.conf")
               foreach ($file in $copy_what)
@@ -317,6 +323,7 @@ jobs:
               }
               ./unix2dos.exe $dest\dosbox-x.reference.conf
               ./unix2dos.exe $dest\dosbox-x.reference.full.conf
+              Write-Host " "
             }
           }
       - name: Copy configs
@@ -344,7 +351,7 @@ jobs:
           name: setup
           path: ${{ env.SETUP_DIR }}\dosbox-x-windows-setup-allusers.exe
 
-      - name: Upload setup to invoking Release
+      - name: Upload installer to invoking Release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@master
         env:
@@ -354,7 +361,7 @@ jobs:
           asset_path: ${{ env.SETUP_DIR }}\dosbox-x-windows-setup.exe
           asset_name: dosbox-x-windows-setup.exe
           asset_content_type: application/octet-stream
-      - name: Upload Vista-only setup to invoking Release
+      - name: Upload Vista-only installer to invoking Release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@master
         env:
