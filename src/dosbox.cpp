@@ -759,9 +759,10 @@ std::string dosbox_title;
 
 void DOSBOX_InitTickLoop() {
     LOG(LOG_MISC,LOG_DEBUG)("Initializing tick loop management");
+    Section_prop *section = static_cast<Section_prop *>(control->GetSection("cpu"));
 
     ticksRemain = 0;
-    ticksLocked = false;
+    ticksLocked = section->Get_bool("turbo");
     ticksLastRTtime = 0;
     ticksLast = GetTicks();
     ticksLastRTcounter = GetTicks();
@@ -2573,6 +2574,10 @@ void DOSBOX_SetupConfigSections(void) {
     Pint = secprop->Add_int("cycle emulation percentage adjust",Property::Changeable::Always,0);
     Pint->SetMinMax(-50,50);
     Pint->Set_help("The percentage adjustment for use with the \"Emulate CPU speed\" feature. Default is 0 (no adjustment), but you can adjust it (between -25% and 25%) if necessary.");
+
+    Pbool = secprop->Add_bool("turbo",Property::Changeable::Always,false);
+    Pbool->Set_help("Enables Turbo (Fast Forward) mode to speed up operations.");
+    Pbool->SetBasic(true);
 
     Pstring = secprop->Add_string("use dynamic core with paging on",Property::Changeable::Always,"auto");
     Pstring->Set_values(truefalseautoopt);
