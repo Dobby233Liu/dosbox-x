@@ -33,10 +33,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Install dependencies
-        run: |
-          brew install fluid-synth
-          brew install libslirp
-          brew install pkg-config
+        run: brew install autoconf automake libtool ncurses nasm freetype fluid-synth libslirp pkg-config
       - name: Build
         env:
           RUN_NSUFF: ${{ matrix.variant }}
