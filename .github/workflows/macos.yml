@@ -29,8 +29,9 @@ jobs:
   build:
     name: Build
     
-    # use big sur. latest is still catalina
-    runs-on: macos-11.0
+    # use big sur for arm64. latest is still catalina
+    # https://github.com/actions/virtual-environments/blob/main/docs/macos-11-onboarding.md
+    runs-on: macos-11
     strategy:
       matrix:
         variant: ["", "-sdl2"]
