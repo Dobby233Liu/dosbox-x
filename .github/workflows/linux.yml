@@ -51,6 +51,7 @@ jobs:
           
       - name: Build RPM
         run: |
+          ./autogen.sh
           ln -s /home ~
           mkdir -p ~/rpmbuild/SOURCES/
           ./make-rpm.sh
