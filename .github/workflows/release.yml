@@ -2,6 +2,8 @@ on:
   push:
     tags:
       - "dosbox-x-v*"
+  release:
+    type: [published]
 
 name: Create Release from tag
 
