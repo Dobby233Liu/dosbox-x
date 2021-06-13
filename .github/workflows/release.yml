@@ -57,12 +57,20 @@ jobs:
                 print(line, file=desc, end='')
         name: Generate release body
         shell: python
+      - name: Output proper tag name
+        id: tag
+        shell: python
+        run: |
+          x = os.environ["GITHUB_REF"]
+          if x.startswith("refs/tags/"):
+            x = x[len("refs/tags/"):]
+          print("::set-output name=tag::%s" % x)
         
       - name: Create Release
         uses: ncipollo/release-action@v1.8.6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.ref }}
+          tag: ${{ steps.tag.outputs.tag }}
           commit: ${{ github.sha }}
           allowUpdates: true
           name: DOSBox-X ${{ steps.header.outputs.version }} ${{ github.event.head_commit.timestamp }}
