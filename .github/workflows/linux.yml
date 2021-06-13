@@ -85,7 +85,7 @@ jobs:
               const flen = await fs.stat(`./release/linux/${file}`).size;
               await github.repos.uploadReleaseAsset({
                 url: `${{ github.event.release.upload_url }}`,
-                { "content-type": "application/octet-stream", "content-length": },
+                { "content-type": "application/octet-stream", "content-length": flen},
                 name: file,
                 file: await fs.readFile(`./release/linux/${file}`)
               });
