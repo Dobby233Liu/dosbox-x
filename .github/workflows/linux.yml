@@ -49,7 +49,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo dnf group install "C Development Tools and Libraries" -y
-          sudo dnf install -y SDL_net-devel SDL2_net-devel libxkbfile-devel ncurses-devel libpcap-devel libslirp-devel libpng-devel fluidsynth-devel freetype-devel nasm
+          sudo dnf install -y SDL_net-devel SDL2_net-devel libxkbfile-devel ncurses-devel libpcap-devel libslirp-devel libpng-devel fluidsynth-devel freetype-devel nasm desktop-file-utils libappstream-glib pulseaudio-libs-devel
           sudo dnf group install "RPM Development Tools" -y
           
       # TODO: tests?
