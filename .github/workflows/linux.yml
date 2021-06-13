@@ -74,34 +74,20 @@ jobs:
         with:
           name: rpms-fedora
           path: release/linux
-      # FIXME what the ****
-      - name: Upload file 1 to invoking Release
-        if: github.event_name == 'release'
-        uses: actions/upload-release-asset@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload RPMs as assets
+        uses: actions/github-script@v2
         with:
-          upload_url: ${{ github.event.release.upload_url }} 
-          asset_path: ${{ steps.build-rpm.outputs.i1 }}
-          asset_name: ${{ steps.build-rpm.outputs.i1s }}
-          asset_content_type: application/octet-stream
-      - name: Upload file 2 to invoking Release
-        if: github.event_name == 'release'
-        uses: actions/upload-release-asset@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }} 
-          asset_path: ${{ steps.build-rpm.outputs.i2 }}
-          asset_name: ${{ steps.build-rpm.outputs.i2s }}
-          asset_content_type: application/octet-stream
-      - name: Upload file 3 to invoking Release
-        if: github.event_name == 'release'
-        uses: actions/upload-release-asset@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }} 
-          asset_path: ${{ steps.build-rpm.outputs.i3 }}
-          asset_name: ${{ steps.build-rpm.outputs.i3s }}
-          asset_content_type: application/octet-stream
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs').promises;
+            
+            for (let file of await fs.readdir('./release/linux')) {
+              console.log("Uploading file ", file, "...");
+              const flen = await fs.stat(`./release/linux/${file}`).size;
+              await github.repos.uploadReleaseAsset({
+                url: `${{ github.event.release.upload_url }}`,
+                { "content-type": "application/octet-stream", "content-length": },
+                name: file,
+                file: await fs.readFile(`./release/linux/${file}`)
+              });
+            }
