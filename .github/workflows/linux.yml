@@ -37,9 +37,6 @@ jobs:
     #if: github.event_name == 'release'
     
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        variant: ["", -sdl2]
     container: fedora:latest
     
     steps:
@@ -52,15 +49,6 @@ jobs:
           sudo dnf install -y SDL_net-devel SDL2_net-devel libxkbfile-devel ncurses-devel libpcap-devel libslirp-devel libpng-devel fluidsynth-devel freetype-devel nasm desktop-file-utils libappstream-glib pulseaudio-libs-devel
           sudo dnf group install "RPM Development Tools" -y
           
-      # TODO: tests?
-      # also i wonder why the debug variant is preferred?
-      - name: Build & Install
-        env:
-          RUN_NSUFF: ${{ matrix.variant }}
-        run: |
-          chmod +x build-debug$RUN_NSUFF
-          ./build-debug$RUN_NSUFF
-          sudo make install
       - name: Build RPM
         run: |
           ln -s /home ~
