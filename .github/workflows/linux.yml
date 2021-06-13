@@ -3,12 +3,11 @@ name: Build for Linux & DOS (LOADLIN)
 on:
   push:
   pull_request:
-  #release:
-  #  types: [published]
+  release:
+    types: [published]
     
 jobs:
   linux_ubuntu:
-    # Basic ubuntu provided by Actions
     name: Build on Ubuntu
     
     runs-on: ubuntu-latest
@@ -24,8 +23,7 @@ jobs:
         run: sudo apt install automake gcc g++ make libncurses-dev nasm libsdl-net1.2-dev libsdl2-net-dev libpcap-dev libslirp-dev fluidsynth libfluidsynth-dev libavdevice58 libavformat-dev libavcodec-dev libavcodec-extra libavcodec-extra58 libswscale-dev libfreetype-dev libxkbfile-dev libxrandr-dev
       
       # TODO: tests?
-      # nothing in configure.ac
-      # i wonder why the debug variant is preferred?
+      # also i wonder why the debug variant is preferred?
       - name: Build & Install
         env:
           RUN_NSUFF: ${{ matrix.variant }}
@@ -34,15 +32,27 @@ jobs:
           ./build-debug$RUN_NSUFF
           sudo make install
   
-  #linux_hub:
-  #  # Linux containers provided by Docker Hub
-  #  name: Build on containers
-  #  
-  #  runs-on: ubuntu-latest
-  #  strategy:
-  #    matrix:
-  #      image: [i386/debian:latest, arm32v7/debian:latest]
-  #      variant: ["", -sdl2]
-  #  container: ${{ matrix.image }}
-  
-  # TODO: figure out how to also insert one to generate RPMs
+  build_rpm:
+    name: Build RPM on Fedora
+    #if: github.event_name == 'release'
+    
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo dnf group install "C Development Tools and Libraries"
+          sudo dnf install SDL_net-devel SDL2_net-devel libxkbfile-devel ncurses-devel libpcap-devel libslirp-devel libpng-devel fluidsynth-devel freetype-devel nasm
+          sudo dnf group install "RPM Development Tools"
+      - name: Build & Install
+        run: |
+          ./build-debug
+          sudo make install
+      - name: Build RPM
+        run: ./make-rpm.sh
+      # TODO upload and release
+      
+  # TODO: make LOADLIN package in this too
