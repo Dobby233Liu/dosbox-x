@@ -82,5 +82,5 @@ jobs:
         with:
           upload_url: ${{ github.event.release.upload_url }} 
           asset_path: dosbox-x.app.tar.gz
-          asset_name: dosbox-x-macosx-x86_64.tar.gz
+          asset_name: dosbox-x-macosx-x86_64${{ matrix.variant }}.tar.gz
           asset_content_type: application/gzip
