@@ -1,0 +1,56 @@
+name: Build for macOS
+
+on:
+  push:
+  pull_request:
+#  release:
+#    types: [published]
+
+# TODO NTS plan:
+#   [x86_64]  [arm64]  [universal]
+#       \       |       /
+#        \      |      /
+#         [build bundle]
+#               |
+#         [tar & upload] - [run thru release?]
+#                                   |
+#                  [create dmg & upload to release]
+# xref: https://developer.apple.com/documentation/apple-silicon/building-a-universal-macos-binary
+#       https://github.com/dosbox-staging/dosbox-staging/blob/master/.github/workflows/macos.yml
+#       https://github.com/create-dmg/create-dmg (brew install create-dmg)
+# remember to touch other workflows
+
+jobs:
+  build:
+    name: Build
+    
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        variant: ["", "-sdl2"]
+       
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          brew install fluid-synth
+          brew install libslirp
+          brew install pkg-config
+      - name: Build
+        env:
+          RUN_NSUFF: ${{ matrix.variant }}
+        run: |
+          chmod +x build-macosx$RUN_NSUFF
+          ./build-macosx$RUN_NSUFF
+      # also tar it to keep permissions
+      - name: Make app bundle
+        run: |
+          make dosbox-x.app
+          tar -czf dosbox-x.app.tar.gz dosbox-x.app
+      # DON'T UPLOAD TO RELEASES, we're going to make dmgs instead
+      - name: Upload app bundle
+        uses: actions/upload-artifact@v2
+        with:
+          name: macos-x86_64${{ matrix.variant }}
+          path: dosbox-x.app.tar.gz
