@@ -1,5 +1,4 @@
 name: Build for Linux & DOS (LOADLIN)
-
 on:
   push:
   pull_request:
@@ -49,9 +48,9 @@ jobs:
           sudo dnf group install "RPM Development Tools" -y
           sudo dnf install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
           sudo dnf install -y SDL_net-devel SDL2_net-devel libxkbfile-devel ncurses-devel libpcap-devel libslirp-devel libpng-devel fluidsynth-devel freetype-devel nasm desktop-file-utils libappstream-glib pulseaudio-libs-devel ffmpeg-devel
-          
       # TODO: Should we build SDL2 version too?
       - name: Build RPM
+        id: build-rpm
         run: |
           ./autogen.sh
           chmod +x configure
@@ -59,7 +58,48 @@ jobs:
           ln -s /home ~
           mkdir -p ~/rpmbuild/SOURCES/
           ./make-rpm.sh
+          mv release/linux-ID=fedora release/linux
+          i=0
+          for filename in release/linux/*.rpm; do
+            [ -e "$filename" ] || continue
+            i+=1
+            echo "::set-output name=i$i::$filename"
+            echo $filename
+          done
         
-      # TODO upload and release
-      
-  # TODO: make LOADLIN package in this too
+      - name: Upload RPMs as artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: rpms-fedora
+          path: release/linux
+      # FIXME what the ****
+      - name: Upload to invoking Release
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }} 
+          asset_path: ${{ steps.build-rpm.outputs.i1 }}
+          asset_name: ${{ steps.build-rpm.outputs.i1 }}
+          asset_content_type: application/octet-stream
+      - name: Upload to invoking Release
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }} 
+          asset_path: ${{ steps.build-rpm.outputs.i2 }}
+          asset_name: ${{ steps.build-rpm.outputs.i2 }}
+          asset_content_type: application/octet-stream
+      - name: Upload to invoking Release
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }} 
+          asset_path: ${{ steps.build-rpm.outputs.i3 }}
+          asset_name: ${{ steps.build-rpm.outputs.i3 }}
+          asset_content_type: application/octet-stream
