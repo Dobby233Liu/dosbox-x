@@ -1,0 +1,48 @@
+name: Build for Linux & DOS (LOADLIN)
+
+on:
+  push:
+  pull_request:
+  #release:
+  #  types: [published]
+    
+jobs:
+  linux_ubuntu:
+    # Basic ubuntu provided by Actions
+    name: Build on Ubuntu
+    
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        variant: ["", -sdl2]
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      
+      - name: Install dependencies
+        run: sudo apt install automake gcc g++ make libncurses-dev nasm libsdl-net1.2-dev libsdl2-net-dev libpcap-dev libslirp-dev fluidsynth libfluidsynth-dev libavdevice58 libavformat-dev libavcodec-dev libavcodec-extra libavcodec-extra58 libswscale-dev libfreetype-dev libxkbfile-dev libxrandr-dev
+      
+      # TODO: tests?
+      # nothing in configure.ac
+      # i wonder why the debug variant is preferred?
+      - name: Build & Install
+        env:
+          RUN_NSUFF: ${{ matrix.variant }}
+        run: |
+          chmod +x build-debug$RUN_NSUFF
+          ./build-debug$RUN_NSUFF
+          sudo make install
+  
+  #linux_hub:
+  #  # Linux containers provided by Docker Hub
+  #  name: Build on containers
+  #  
+  #  runs-on: ubuntu-latest
+  #  strategy:
+  #    matrix:
+  #      image: [i386/debian:latest, arm32v7/debian:latest]
+  #      variant: ["", -sdl2]
+  #  container: ${{ matrix.image }}
+  
+  # TODO: figure out how to also insert one to generate RPMs
