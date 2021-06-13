@@ -22,16 +22,16 @@ on:
 
 env:
   # see https://github.com/actions/virtual-environments/issues/3522
-  # REMOVE THIS LINE when the change done
+  # REMOVE THIS LINE when the change is done
   DEVELOPER_DIR: /Applications/Xcode_12.5.app
 
 jobs:
   build:
     name: Build
     
-    # use big sur for arm64. latest is still catalina
+    # TODO: get to use 11
     # https://github.com/actions/virtual-environments/blob/main/docs/macos-11-onboarding.md
-    runs-on: macos-11
+    runs-on: macos-latest
     strategy:
       matrix:
         variant: ["", "-sdl2"]
