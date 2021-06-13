@@ -1,7 +1,4 @@
 on:
-  push:
-    tags:
-      - "dosbox-x-v*"
   release:
     type: [published]
 
@@ -66,5 +63,5 @@ jobs:
           commit: ${{ github.sha }}
           allowUpdates: true
           name: DOSBox-X ${{ steps.header.outputs.version }} ${{ github.event.head_commit.timestamp }}
-          body_path: CHANGELOG.md
+          bodyFile: CHANGELOG.md
           replacesArtifacts: false
