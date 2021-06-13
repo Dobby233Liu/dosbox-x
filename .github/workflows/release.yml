@@ -12,6 +12,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        
       # FIXME: evaluate (with) something else
       - name: Generate release name from headers
         id: header
@@ -54,10 +55,9 @@ jobs:
                 print(line, file=desc, end='')
         name: Generate release body
         shell: python
-      - run: cat CHANGELOG.md
-        name: Check release body
+        
       - name: Create Release
-        uses: ncipollo/release-action@a5a057b70732aaff1a5f3e4033950338ef662e7a
+        uses: ncipollo/release-action@v1.8.6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }}
