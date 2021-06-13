@@ -37,22 +37,33 @@ jobs:
     #if: github.event_name == 'release'
     
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        variant: ["", -sdl2]
     container: fedora:latest
     
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        
       - name: Install dependencies
         run: |
-          sudo dnf group install "C Development Tools and Libraries"
-          sudo dnf install SDL_net-devel SDL2_net-devel libxkbfile-devel ncurses-devel libpcap-devel libslirp-devel libpng-devel fluidsynth-devel freetype-devel nasm
-          sudo dnf group install "RPM Development Tools"
+          sudo dnf group install "C Development Tools and Libraries" -y
+          sudo dnf install -y SDL_net-devel SDL2_net-devel libxkbfile-devel ncurses-devel libpcap-devel libslirp-devel libpng-devel fluidsynth-devel freetype-devel nasm
+          sudo dnf group install "RPM Development Tools" -y
+          
+      # TODO: tests?
+      # also i wonder why the debug variant is preferred?
       - name: Build & Install
+        env:
+          RUN_NSUFF: ${{ matrix.variant }}
         run: |
-          ./build-debug
+          chmod +x build-debug$RUN_NSUFF
+          ./build-debug$RUN_NSUFF
           sudo make install
       - name: Build RPM
         run: ./make-rpm.sh
+        
       # TODO upload and release
       
   # TODO: make LOADLIN package in this too
