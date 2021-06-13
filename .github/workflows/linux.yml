@@ -33,7 +33,7 @@ jobs:
   
   build_rpm:
     name: Build RPM on Fedora
-    #if: github.event_name == 'release'
+    if: github.event_name == 'release'
     
     runs-on: ubuntu-latest
     container: fedora:latest
@@ -59,11 +59,13 @@ jobs:
           mkdir -p ~/rpmbuild/SOURCES/
           ./make-rpm.sh
           mv release/linux-ID=fedora release/linux
+          cd release/linux
           i=0
-          for filename in release/linux/*.rpm; do
+          for filename in *.rpm; do
             [ -e "$filename" ] || continue
             i+=1
-            echo "::set-output name=i$i::$filename"
+            echo "::set-output name=i$i::release/linux/$filename"
+            echo "::set-output name=i$is::$filename"
             echo $filename
           done
         
@@ -73,7 +75,7 @@ jobs:
           name: rpms-fedora
           path: release/linux
       # FIXME what the ****
-      - name: Upload to invoking Release
+      - name: Upload file 1 to invoking Release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@master
         env:
@@ -81,9 +83,9 @@ jobs:
         with:
           upload_url: ${{ github.event.release.upload_url }} 
           asset_path: ${{ steps.build-rpm.outputs.i1 }}
-          asset_name: ${{ steps.build-rpm.outputs.i1 }}
+          asset_name: ${{ steps.build-rpm.outputs.i1s }}
           asset_content_type: application/octet-stream
-      - name: Upload to invoking Release
+      - name: Upload file 2 to invoking Release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@master
         env:
@@ -91,9 +93,9 @@ jobs:
         with:
           upload_url: ${{ github.event.release.upload_url }} 
           asset_path: ${{ steps.build-rpm.outputs.i2 }}
-          asset_name: ${{ steps.build-rpm.outputs.i2 }}
+          asset_name: ${{ steps.build-rpm.outputs.i2s }}
           asset_content_type: application/octet-stream
-      - name: Upload to invoking Release
+      - name: Upload file 3 to invoking Release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@master
         env:
@@ -101,5 +103,5 @@ jobs:
         with:
           upload_url: ${{ github.event.release.upload_url }} 
           asset_path: ${{ steps.build-rpm.outputs.i3 }}
-          asset_name: ${{ steps.build-rpm.outputs.i3 }}
+          asset_name: ${{ steps.build-rpm.outputs.i3s }}
           asset_content_type: application/octet-stream
