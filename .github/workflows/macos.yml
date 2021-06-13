@@ -30,7 +30,7 @@ jobs:
     name: Build
     
     # use big sur. latest is still catalina
-    runs-on: macos-11
+    runs-on: macos-11.0
     strategy:
       matrix:
         variant: ["", "-sdl2"]
