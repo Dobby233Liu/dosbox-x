@@ -62,7 +62,10 @@ jobs:
           ./build-debug$RUN_NSUFF
           sudo make install
       - name: Build RPM
-        run: ./make-rpm.sh
+        run: |
+          ln -s /home ~
+          mkdir -p ~/rpmbuild/SOURCES/
+          ./make-rpm.sh
         
       # TODO upload and release
       
