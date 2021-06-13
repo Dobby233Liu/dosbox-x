@@ -20,14 +20,21 @@ on:
 #       https://github.com/create-dmg/create-dmg (brew install create-dmg)
 # remember to touch other workflows
 
+env:
+  # see https://github.com/actions/virtual-environments/issues/3522
+  # REMOVE THIS LINE when the change done
+  DEVELOPER_DIR: /Applications/Xcode_12.5.app
+
 jobs:
   build:
     name: Build
     
-    runs-on: macos-latest
+    # use big sur. latest is still catalina
+    runs-on: macos-11
     strategy:
       matrix:
         variant: ["", "-sdl2"]
+        arch: [x86_64, arm64, universal]
        
     steps:
       - name: Checkout repo
@@ -35,12 +42,39 @@ jobs:
       - name: Install dependencies
         run: brew install autoconf automake libtool ncurses nasm freetype fluid-synth libslirp pkg-config
       - name: Build
+        if: matrix.arch != 'universal'
+        env:
+          RUN_NSUFF: ${{ matrix.variant }}
+          TARGET_ARCH: ${{ matrix.arch }}
+        run: |
+          x=x86_64-apple-macos10.12
+          if [ $TARGET_ARCH = "arm64" ]; then
+            x="arm64-apple-macos11"
+          fi
+          CFLAGS+=" -target $x"
+          CXXFLAGS+=" -target $x"
+          chmod +x build-macosx$RUN_NSUFF
+          ./build-macosx$RUN_NSUFF
+      - name: Build (universal)
+        if: matrix.arch == 'universal'
         env:
           RUN_NSUFF: ${{ matrix.variant }}
         run: |
+          OCFL=$CFLAGS
+          OCXFL=$CXXFLAGS
           chmod +x build-macosx$RUN_NSUFF
+          CFLAGS+=" -target x86_64-apple-macos10.12"
+          CXXFLAGS+=" -target x86_64-apple-macos10.12"
           ./build-macosx$RUN_NSUFF
-      # also tar it to keep permissions
+          CFLAGS=$OCFL
+          CXXFLAGS=$OCXFL
+          cp src/dosbox-x src/dosbox-x-1
+          CFLAGS+=" -target arm64-apple-macos11"
+          CXXFLAGS+=" -target arm64-apple-macos11"
+          ./build-macosx$RUN_NSUFF
+          cp src/dosbox-x src/dosbox-x-2
+          lipo -create -output src/dosbox-x src/dosbox-x-1 src/dosbox-x-2
+      # tar it to keep permissions
       - name: Make app bundle
         run: |
           make dosbox-x.app
@@ -49,5 +83,5 @@ jobs:
       - name: Upload app bundle
         uses: actions/upload-artifact@v2
         with:
-          name: macos-x86_64${{ matrix.variant }}
+          name: macos-${{ matrix.arch }}${{ matrix.variant }}
           path: dosbox-x.app.tar.gz
