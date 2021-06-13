@@ -5962,6 +5962,7 @@ Bitu DOS_SwitchKeyboardLayout(const char* new_layout, int32_t& tried_cp);
 Bitu DOS_LoadKeyboardLayout(const char * layoutname, int32_t codepage, const char * codepagefile);
 const char* DOS_GetLoadedLayout(void);
 void SetupDBCSTable();
+void change_output(int output);
 
 class KEYB : public Program {
 public:
