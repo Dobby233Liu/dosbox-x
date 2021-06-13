@@ -46,10 +46,11 @@ jobs:
       - name: Install dependencies
         run: |
           sudo dnf group install "C Development Tools and Libraries" -y
-          sudo dnf install -y SDL_net-devel SDL2_net-devel libxkbfile-devel ncurses-devel libpcap-devel libslirp-devel libpng-devel fluidsynth-devel freetype-devel nasm desktop-file-utils libappstream-glib pulseaudio-libs-devel
           sudo dnf group install "RPM Development Tools" -y
+          sudo dnf install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+          sudo dnf install -y SDL_net-devel SDL2_net-devel libxkbfile-devel ncurses-devel libpcap-devel libslirp-devel libpng-devel fluidsynth-devel freetype-devel nasm desktop-file-utils libappstream-glib pulseaudio-libs-devel ffmpeg-devel
           
-      # BUILD FOR SDL2 TOO?
+      # TODO: Should we build SDL2 version too?
       - name: Build RPM
         run: |
           ./autogen.sh
