@@ -75,9 +75,8 @@ jobs:
           name: rpms-fedora
           path: release/linux
       - name: Upload RPMs as assets
-        uses: actions/github-script@v2
+        uses: actions/github-script@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs').promises;
             
