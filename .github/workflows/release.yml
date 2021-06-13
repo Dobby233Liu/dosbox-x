@@ -61,6 +61,7 @@ jobs:
         id: tag
         shell: python
         run: |
+          import os
           x = os.environ["GITHUB_REF"]
           if x.startswith("refs/tags/"):
             x = x[len("refs/tags/"):]
