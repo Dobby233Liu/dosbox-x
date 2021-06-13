@@ -49,9 +49,12 @@ jobs:
           sudo dnf install -y SDL_net-devel SDL2_net-devel libxkbfile-devel ncurses-devel libpcap-devel libslirp-devel libpng-devel fluidsynth-devel freetype-devel nasm desktop-file-utils libappstream-glib pulseaudio-libs-devel
           sudo dnf group install "RPM Development Tools" -y
           
+      # BUILD FOR SDL2 TOO?
       - name: Build RPM
         run: |
           ./autogen.sh
+          chmod +x configure
+          ./configure --enable-core-inline --enable-debug=heavy --prefix=/usr
           ln -s /home ~
           mkdir -p ~/rpmbuild/SOURCES/
           ./make-rpm.sh
