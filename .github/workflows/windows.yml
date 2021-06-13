@@ -94,7 +94,7 @@ jobs:
       matrix:
         arch: [32, 64]
         type: ["", -sdl2, -lowend, -sdldraw]
-      fail-fast: false
+
       
     defaults:
       run:
