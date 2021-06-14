@@ -255,8 +255,7 @@ jobs:
           7z x a.tar -oC:\mingw32 -y -aoa -bb0 -bso0
           7z e aa.tar.xz -o${{ runner.temp }} -y -aoa -bb0 -bso0
           7z x aa.tar -oC:\mingw32 -y -aoa -bb0 -bso0
-          dir /w C:\mingw32
-      - name: Put toolchain in PATH
+      - name: Install toolchain
         run: echo C:\mingw32\bin>> %GITHUB_PATH%
         shell: cmd
       - uses: msys2/setup-msys2@v2
@@ -283,6 +282,12 @@ jobs:
         run: |
           chmod +x build-mingw-hx-dos
           ./build-mingw-hx-dos
+      - name: DEBUG
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: debug-hx-dos
+          path: config.log
           
       - name: Pack zip
         run: |
