@@ -86,6 +86,6 @@ jobs:
           name: DOSBox-X ${{ steps.header.outputs.version }} ${{ github.event.head_commit.timestamp }}
           bodyFile: CHANGELOG.md
           replacesArtifacts: false
-      - name: Cancel jobs triggered by tag
-        if: always()
-        uses: Dobby233Liu/homebrew-actions/cancel-previous-runs@master
+      #- name: Cancel jobs triggered by tag
+      #  if: always()
+      #  uses: Dobby233Liu/homebrew-actions/cancel-previous-runs@master
