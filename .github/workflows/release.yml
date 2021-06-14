@@ -54,9 +54,8 @@ jobs:
               for line in it:
                 if line == "\r\n" or not line.startswith("  "):
                   break
-                line = line.lstrip()
                 chk = next(it).strip()
-                print(line.rstrip(), file=desc, end='')
+                print(line.strip(), file=desc, end='')
                 while not chk.startswith("-"):
                   print(" %s" % chk, file=desc, end='')
                   chk = next(it).strip()
