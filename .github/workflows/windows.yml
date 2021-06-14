@@ -87,14 +87,13 @@ jobs:
           asset_content_type: application/zip
           
   mingw:
-    name: Build with MSYS2
+    name: Build with MinGW-w64 toolchain
     runs-on: windows-latest
     
     strategy:
       matrix:
         arch: [32, 64]
         type: ["", -sdl2, -lowend, -sdldraw]
-
       
     defaults:
       run:
@@ -124,7 +123,7 @@ jobs:
         with:
           MSYSTEM: MINGW${{ matrix.arch }}
           release: true
-          update: true
+          #update: true
           install: >-
             base-devel
             git
@@ -230,8 +229,92 @@ jobs:
           asset_name: dosbox-x-mingw-win${{ matrix.arch }}${{ matrix.type }}.zip
           asset_content_type: application/zip
           
-  # TODO: add HX-DOS
-  # also put LOADLIN into linux.yml if possible
+  mingw-hx-dos:
+    name: Build for HX-DOS
+    runs-on: windows-latest
+      
+    defaults:
+      run:
+        shell: msys2 {0}
+      
+    steps:
+      - name: Cache toolchain
+        uses: actions/cache@v2
+        with:
+          key: mingw-gcc-9.2.0-3
+          path: C:\mingw32
+        id: cache-gcc
+      - name: Download toolchain
+        shell: cmd
+        working-directory: ${{ runner.temp }}
+        if: steps.cache-gcc.outputs.cache-hit != 'true'
+        run: |
+          curl -o a.tar.xz -L -s "https://osdn.net/projects/mingw/downloads/72217/gcc-core-9.2.0-3-mingw32-bin.tar.xz"
+          curl -o aa.tar.xz -L -s "https://osdn.net/projects/mingw/downloads/72211/gcc-c++-9.2.0-3-mingw32-bin.tar.xz"
+          7z e a.tar.xz -o${{ runner.temp }} -y -aoa -bb0 -bso0
+          7z x a.tar -oC:\mingw32 -y -aoa -bb0 -bso0
+          7z e aa.tar.xz -o${{ runner.temp }} -y -aoa -bb0 -bso0
+          7z x aa.tar -oC:\mingw32 -y -aoa -bb0 -bso0
+          dir /w C:\mingw32
+      - name: Put toolchain in PATH
+        run: echo C:\mingw32\bin>> %GITHUB_PATH%
+        shell: cmd
+      - uses: msys2/setup-msys2@v2
+        name: Setup MSYS2
+        with:
+          MSYSTEM: MINGW32
+          release: true
+          #update: true
+          path-type: inherit
+          install: >-
+            base-devel
+            git
+            yasm
+            nasm
+  
+      - uses: actions/checkout@v2
+        name: Checkout repo
+        
+      # NTS: no ffmpeg here yet
+        
+      - run: perl update-build-timestamp.pl
+        name: Update build timestamp
+      - name: Build using script
+        run: |
+          chmod +x build-mingw-hx-dos
+          ./build-mingw-hx-dos
+          
+      - name: Pack zip
+        run: |
+          $hxdir="build-scripts/mingw/hxdos"
+          strip src/dosbox-x.exe
+          cp src/dosbox-x.exe $hxdir/dosbox-x.exe
+          $hxdir/pestub.exe -n $hxdir/dosbox-x.exe
+          cp CHANGELOG $hxdir/CHANGELOG.txt
+          cp dosbox-x.reference.conf $hxdir/dosbox-x.ref
+          cp dosbox-x.reference.full.conf $hxdir/dosbox-x.ful
+          mv $hxdir _build
+          
+      - name: Upload build as an artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: mingw-hx-dos
+          path: _build
+          
+      - name: Generate zip if invoked by a Release
+        if: github.event_name == 'release'
+        run: |
+          ./vs2015/tool/zip.exe -r -9 build.zip _build
+      - name: Upload build to invoking Release
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }} 
+          asset_path: ./build.zip
+          asset_name: dosbox-x-mingw-hx-dos.zip
+          asset_content_type: application/zip
           
   installer: # (Wengier)
     name: Build Inno Setup installer
