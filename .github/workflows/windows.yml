@@ -287,7 +287,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: debug-hx-dos
-          path: config.log
+          path: vs2015/sdl/linux-build/config.log
           
       - name: Pack zip
         run: |
