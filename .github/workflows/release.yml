@@ -56,14 +56,14 @@ jobs:
                   break
                 try:
                   chk = next(it).strip()
-                except IteratorExit:
+                except StopIteration:
                   break
                 print(line.strip(), file=desc, end='')
                 while not chk.startswith("-"):
                   print(" %s" % chk, file=desc, end='')
                   try:
                     chk = next(it).strip()
-                  except IteratorExit:
+                  except StopIteration:
                     break
                 print("", file=desc, end='\n')
         name: Generate release body
