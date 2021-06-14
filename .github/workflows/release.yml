@@ -54,18 +54,10 @@ jobs:
               for line in it:
                 if line == "\r\n" or not line.startswith("  "):
                   break
-                try:
-                  chk = next(it).strip()
-                except StopIteration:
-                  break
-                print(line.strip(), file=desc, end='')
-                while not chk.startswith("-"):
-                  print(" %s" % chk, file=desc, end='')
-                  try:
-                    chk = next(it).strip()
-                  except StopIteration:
-                    break
-                print("", file=desc, end='\n')
+                line = line.strip()
+                if not line.startswith('-'):
+                  desc.seek(-1) # assuming last character is \n
+                print(line, file=desc, end='')
         name: Generate release body
         shell: python
       - name: Output proper tag name
