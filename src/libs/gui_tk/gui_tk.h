@@ -134,6 +134,8 @@ typedef unsigned __int32 uint32_t;
 #include <string>
 #include <iostream>
 
+#include "dosbox.h"
+
 /// This namespace contains all GUI toolkit classes, types and functions.
 namespace GUI {
 
