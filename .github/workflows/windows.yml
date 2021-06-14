@@ -249,7 +249,7 @@ jobs:
       - name: Install toolchain
         shell: cmd
         working-directory: C:\MinGW
-        run: mingw-get install gcc g++
+        run: mingw-get install gcc g++ binutils
       - uses: msys2/setup-msys2@v2
         name: Setup MSYS2
         with:
@@ -274,12 +274,6 @@ jobs:
         run: |
           chmod +x build-mingw-hx-dos
           ./build-mingw-hx-dos
-      - name: DEBUG
-        if: failure()
-        uses: actions/upload-artifact@v2
-        with:
-          name: debug-hx-dos
-          path: vs2015/sdl/linux-build/config.log
           
       - name: Pack zip
         run: |
