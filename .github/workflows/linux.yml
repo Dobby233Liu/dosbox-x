@@ -76,6 +76,8 @@ jobs:
           path: release/linux
       - name: Upload RPMs as assets
         uses: actions/github-script@v4
+        env:
+          UPLOAD_URL: ${{ github.event.release.upload_url }}
         with:
           script: |
             const fs = require('fs').promises;
@@ -83,9 +85,10 @@ jobs:
             for (let file of await fs.readdir('./release/linux')) {
               console.log("Uploading file ", file, "...");
               const flen = await fs.stat(`./release/linux/${file}`).size;
+              const url = process.env.UPLOAD_URL;
               await github.repos.uploadReleaseAsset({
-                url: `${{ github.event.release.upload_url }}`,
-                { "content-type": "application/octet-stream", "content-length": flen},
+                url: url,
+                { "content-type": "application/octet-stream", "content-length": flen },
                 name: file,
                 file: await fs.readFile(`./release/linux/${file}`)
               });
