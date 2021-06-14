@@ -238,26 +238,18 @@ jobs:
         shell: msys2 {0}
       
     steps:
-      - name: Cache toolchain
-        uses: actions/cache@v2
-        with:
-          key: mingw-gcc-9.2.0-3
-          path: C:\mingw32
-        id: cache-gcc
       - name: Download toolchain
         shell: cmd
         working-directory: ${{ runner.temp }}
         if: steps.cache-gcc.outputs.cache-hit != 'true'
         run: |
-          curl -o a.tar.xz -L -s "https://osdn.net/projects/mingw/downloads/72217/gcc-core-9.2.0-3-mingw32-bin.tar.xz"
-          curl -o aa.tar.xz -L -s "https://osdn.net/projects/mingw/downloads/72211/gcc-c++-9.2.0-3-mingw32-bin.tar.xz"
-          7z e a.tar.xz -o${{ runner.temp }} -y -aoa -bb0 -bso0
-          7z x a.tar -oC:\mingw32 -y -aoa -bb0 -bso0
-          7z e aa.tar.xz -o${{ runner.temp }} -y -aoa -bb0 -bso0
-          7z x aa.tar -oC:\mingw32 -y -aoa -bb0 -bso0
+          curl -o a.zip -L -s "https://osdn.net/projects/mingw/downloads/68260/mingw-get-0.6.3-mingw32-pre-20170905-1-bin.zip"
+          7z x a.zip -oC:\MinGW -y -aoa -bb0 -bso0
+          echo C:\MinGW\bin>> %GITHUB_PATH%
       - name: Install toolchain
-        run: echo C:\mingw32\bin>> %GITHUB_PATH%
         shell: cmd
+        working-directory: C:\MinGW
+        run: mingw-get install gcc g++
       - uses: msys2/setup-msys2@v2
         name: Setup MSYS2
         with:
