@@ -8,6 +8,11 @@
     listed in the common config reference file (i.e.
     dosbox-x.reference.conf) too. Several previously
     advanced options are now common options. (Wengier)
+  - Added option "drive z expand path" which when set
+    to true (default) will automatically expand %PATH%
+    environment variable to include the subdirectories
+    on the Z drive when only the Z:\ path is specified
+    for compatibility purposes. (Wengier)
   - Added option "turbo" in [cpu] section to enable
     Turbo (Fast Forward) mode at start. You can also
     change it from the command-line via CONFIG command
@@ -60,7 +65,11 @@
     Z drive are now categorized into directories, with
     addition of some files/programs, such as additional
     4DOS files, text utilities in TEXTUTIL directory
-    and TITLE command to change window title. (Wengier)
+    and TITLE command to change window title. Default
+    value of the %PATH% envonment variable has been
+    expanded to include these subdirectories, but if
+    you use a custom path then you may want to include
+    these directories in your %PATH%. (Wengier)
   - You can now specify a command shell located on a
     mounted local drive via SHELL= command in [config]
     section of config file after the drive is properly
