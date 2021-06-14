@@ -81,15 +81,16 @@ jobs:
         with:
           script: |
             const fs = require('fs').promises;
-            
-            for (let file of await fs.readdir('./release/linux')) {
-              console.log("Uploading file ", file, "...");
+
+            for (const file of await fs.readdir('./release/linux')) {
+              console.log('Uploading file ', file, '...');
               const flen = await fs.stat(`./release/linux/${file}`).size;
               const url = process.env.UPLOAD_URL;
+              const conf = { 'content-type': 'application/octet-stream', 'content-length': flen };
               await github.repos.uploadReleaseAsset({
-                url: url,
-                { "content-type": "application/octet-stream", "content-length": flen },
+                url,
+                conf,
                 name: file,
-                file: await fs.readFile(`./release/linux/${file}`)
+                file: await fs.readFile(`./release/linux/${file}`),
               });
             }
