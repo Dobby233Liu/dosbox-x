@@ -57,7 +57,7 @@ jobs:
                   break
                 line = line.strip()
                 if not line.startswith('-'):
-                  desc.seek(-1, os.SEEK_END) # assuming last character is \n
+                  desc.seek(desc.tell() - 1, os.SEEK_SET) # assuming last character is \n
                   desc.truncate()
                 print(line, file=desc, end='')
         name: Generate release body
