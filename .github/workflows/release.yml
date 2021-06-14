@@ -2,6 +2,7 @@ on:
   push:
     tags:
       - 'dosbox-x-v*'
+  # UNCONFIRMED
   release:
     types: [published]
 
@@ -57,7 +58,7 @@ jobs:
                   break
                 line = line.strip()
                 if not line.startswith('-'):
-                  desc.seek(desc.tell() - 1, os.SEEK_SET) # assuming last character is \n
+                  desc.seek(desc.tell(), os.SEEK_SET) # assuming last character is \n
                   desc.truncate()
                   print(" ", file=desc, end='')
                 else:
