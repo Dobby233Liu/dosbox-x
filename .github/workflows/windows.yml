@@ -73,8 +73,9 @@ jobs:
             
       - name: Generate zip if invoked by a Release
         if: github.event_name == 'release'
+        shell: cmd
         run: |
-          ./vs2015/tool/zip.exe -r -9 build.zip "bin/${{ matrix.arch }}/${{ matrix.type }}" -x "*/\.exp" -x "*/\.lib" -x "*/\.pdb"
+          7z a -tzip -mx=9 -mt=on build.zip ".\bin\${{ matrix.arch }}\${{ matrix.type }}\*" -xr!*.exp -xr!*.lib -xr!*.pdb
       - name: Upload build to invoking Release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@master
@@ -216,8 +217,9 @@ jobs:
           
       - name: Generate zip if invoked by a Release
         if: github.event_name == 'release'
+        shell: cmd
         run: |
-          ./vs2015/tool/zip.exe -r -9 build.zip _build
+          7z a -tzip -mx=9 -mt=on build.zip ".\_build\*"
       - name: Upload build to invoking Release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@master
@@ -294,8 +296,9 @@ jobs:
           
       - name: Generate zip if invoked by a Release
         if: github.event_name == 'release'
+        shell: cmd
         run: |
-          ./vs2015/tool/zip.exe -r -9 build.zip _build
+          7z a -tzip -mx=9 -mt=on build.zip ".\_build\*"
       - name: Upload build to invoking Release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@master
