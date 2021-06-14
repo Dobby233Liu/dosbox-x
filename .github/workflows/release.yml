@@ -83,4 +83,5 @@ jobs:
           bodyFile: CHANGELOG.md
           replacesArtifacts: false
       - name: Cancel jobs triggered by tag
+        if: always()
         uses: Dobby233Liu/homebrew-actions/cancel-previous-runs@master
