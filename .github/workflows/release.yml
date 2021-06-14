@@ -59,6 +59,7 @@ jobs:
                 print(line.rstrip(), file=desc, end='')
                 while not chk.startswith("-"):
                   print(" %s" % chk, file=desc, end='')
+                  chk = next(it).strip()
                 print("", file=desc, end='\n')
         name: Generate release body
         shell: python
