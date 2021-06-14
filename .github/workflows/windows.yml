@@ -75,7 +75,7 @@ jobs:
         if: github.event_name == 'release'
         shell: cmd
         run: |
-          7z a -tzip -mx=9 -mt=on build.zip ".\bin\${{ matrix.arch }}\${{ matrix.type }}\*" -xr!*.exp -xr!*.lib -xr!*.pdb
+          7z a -tzip -mx9 -mton build.zip ".\bin\${{ matrix.arch }}\${{ matrix.type }}\*" -xr!*.exp -xr!*.lib -xr!*.pdb
       - name: Upload build to invoking Release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@master
@@ -219,7 +219,7 @@ jobs:
         if: github.event_name == 'release'
         shell: cmd
         run: |
-          7z a -tzip -mx=9 -mt=on build.zip ".\_build\*"
+          7z a -tzip -mx9 -mton build.zip ".\_build\*"
       - name: Upload build to invoking Release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@master
@@ -298,7 +298,7 @@ jobs:
         if: github.event_name == 'release'
         shell: cmd
         run: |
-          7z a -tzip -mx=9 -mt=on build.zip ".\_build\*"
+          7z a -tzip -mx9 -mton build.zip ".\_build\*"
       - name: Upload build to invoking Release
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@master
