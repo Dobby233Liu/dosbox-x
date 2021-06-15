@@ -234,6 +234,8 @@ jobs:
   mingw-hx-dos:
     name: Build for HX-DOS
     runs-on: windows-latest
+    
+    if: false # FIXME
       
     defaults:
       run:
@@ -268,7 +270,8 @@ jobs:
       - uses: actions/checkout@v2
         name: Checkout repo
         
-      # NTS: no ffmpeg here yet
+      # NTS: no ffmpeg here yet.
+      # TODO: Figure out how to put ffmpeg libs in toolchain.
         
       - run: perl update-build-timestamp.pl
         name: Update build timestamp
