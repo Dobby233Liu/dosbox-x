@@ -27,9 +27,12 @@ jobs:
         env:
           RUN_NSUFF: ${{ matrix.variant }}
         run: |
+          perl update-build-timestamp.pl
           chmod +x build-debug$RUN_NSUFF
           ./build-debug$RUN_NSUFF
           sudo make install
+          
+      # TODO: also update ref and translation on repo here? 
   
   build_rpm:
     name: Build RPM on Fedora
@@ -48,10 +51,12 @@ jobs:
           sudo dnf group install "RPM Development Tools" -y
           sudo dnf install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
           sudo dnf install -y SDL_net-devel SDL2_net-devel libxkbfile-devel ncurses-devel libpcap-devel libslirp-devel libpng-devel fluidsynth-devel freetype-devel nasm desktop-file-utils libappstream-glib pulseaudio-libs-devel ffmpeg-devel
+      
       # TODO: Should we build SDL2 version too?
       - name: Build RPM
         id: build-rpm
         run: |
+          perl update-build-timestamp.pl
           ./autogen.sh
           chmod +x configure
           ./configure --enable-core-inline --enable-debug=heavy --prefix=/usr
@@ -59,15 +64,6 @@ jobs:
           mkdir -p ~/rpmbuild/SOURCES/
           ./make-rpm.sh
           mv release/linux-ID=fedora release/linux
-          cd release/linux
-          i=0
-          for filename in *.rpm; do
-            [ -e "$filename" ] || continue
-            i+=1
-            echo "::set-output name=i$i::release/linux/$filename"
-            echo "::set-output name=i$is::$filename"
-            echo $filename
-          done
         
       - name: Upload RPMs as artifacts
         uses: actions/upload-artifact@v2
