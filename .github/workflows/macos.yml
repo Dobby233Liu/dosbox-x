@@ -60,6 +60,7 @@ jobs:
         env:
           RUN_NSUFF: ${{ matrix.variant }}
         run: |
+          perl update-build-timestamp.pl
           chmod +x build-macosx$RUN_NSUFF
           ./build-macosx$RUN_NSUFF
           
