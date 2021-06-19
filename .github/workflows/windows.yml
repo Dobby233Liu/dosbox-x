@@ -146,6 +146,7 @@ jobs:
         name: Checkout repo # fix
         
       # NTS: msys2's ffmpeg package is currently broken (by a lot!)
+      # looking for just building using repo ffmpeg, some patches are already online
       - name: Cache ffmpeg
         id: cache-ffmpeg
         uses: actions/cache@v2
