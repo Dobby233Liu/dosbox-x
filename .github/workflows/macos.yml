@@ -39,8 +39,8 @@ jobs:
           if [ "$(sw_vers -productVersion | cut -d'.' -f1)" = 10 ]; then
             pushd /Library/Developer/CommandLineTools/SDKs
             sudo rm MacOSX.sdk
-            # XXX: check if it's MacOSX11.1.sdk by now
-            sudo ln -s MacOSX11.1.sdk MacOSX.sdk
+            # XXX: check if it's MacOSX11.4.sdk by now
+            sudo ln -s MacOSX11.4.sdk MacOSX.sdk
             sudo rm -rf MacOSX10.15.sdk
             ls -l
             popd
@@ -77,10 +77,10 @@ jobs:
           if [ $TARGET_ARCH = "arm64" ]; then
             x="arm64-apple-macos11"
           fi
-          CFLAGS+=" -target $x"
-          CXXFLAGS+=" -target $x"
+          CFLAGS+=" -target $x -arch $TARGET_ARCH"
+          CXXFLAGS+=" -target $x -arch $TARGET_ARCH"
           chmod +x build-macosx$RUN_NSUFF
-          ./build-macosx$RUN_NSUFF
+          ./build-macosx$RUN_NSUFF CFLAGS=$CFLAGS CXXFLAGS=$CXXFLAGS
       - name: Build (universal)
         if: matrix.arch == 'universal'
         env:
@@ -89,17 +89,19 @@ jobs:
           OCFL=$CFLAGS
           OCXFL=$CXXFLAGS
           chmod +x build-macosx$RUN_NSUFF
-          CFLAGS+=" -target x86_64-apple-macos10.12"
-          CXXFLAGS+=" -target x86_64-apple-macos10.12"
-          ./build-macosx$RUN_NSUFF
+          CFLAGS+=" -target x86_64-apple-macos10.12 -arch x86_64"
+          CXXFLAGS+=" -target x86_64-apple-macos10.12 -arch x86_64"
+          ./build-macosx$RUN_NSUFF CFLAGS=$CFLAGS CXXFLAGS=$CXXFLAGS
           CFLAGS=$OCFL
           CXXFLAGS=$OCXFL
           cp src/dosbox-x src/dosbox-x-1
-          CFLAGS+=" -target arm64-apple-macos11"
-          CXXFLAGS+=" -target arm64-apple-macos11"
-          ./build-macosx$RUN_NSUFF
+          CFLAGS+=" -target arm64-apple-macos11 -arch arm64"
+          CXXFLAGS+=" -target arm64-apple-macos11 -arch arm64"
+          ./build-macosx$RUN_NSUFF CFLAGS=$CFLAGS CXXFLAGS=$CXXFLAGS
           cp src/dosbox-x src/dosbox-x-2
           lipo -create -output src/dosbox-x src/dosbox-x-1 src/dosbox-x-2
+      - name: Check if arch correct [DEBUG]
+        run: file -b src/dosbox-x
           
       # also tar it to keep permissions
       - name: Make app bundle
