@@ -33,7 +33,22 @@ jobs:
           sudo make install
           
       # TODO: also update ref and translation on repo here? 
-  
+      - name: Update & commit files
+        if: matrix.variant == ''
+        continue-on-error: true
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
+          # revert timestamp changes
+          # these shouldn't even be pushed
+          git checkout HEAD -- include/build_timestamp.h
+          git checkout HEAD -- contrib/linux/com.dosbox_x.DOSBox-X.metainfo.xml.in
+          chmod +x update-en-translation && ./update-en-translation
+          chmod +x update-dosbox-x-reference-conf && ./update-dosbox-x-reference-conf
+          git commit -am "Regenerate files"
+          git push
+          
   build_rpm:
     name: Build RPM on Fedora
     if: github.event_name == 'release'
