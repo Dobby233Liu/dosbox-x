@@ -44,6 +44,7 @@ jobs:
         if: matrix.variant == ''
         run: |
           git clean -dfx > /dev/null
+          git pull --tags -f > /dev/null
           git revert f05db4c8238e70159155656a0900510efd543097
           git push
 
