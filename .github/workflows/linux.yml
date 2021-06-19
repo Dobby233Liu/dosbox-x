@@ -25,13 +25,11 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Install dependencies
-        if: false
         run: |
           sudo apt-get update
           sudo apt-get install automake gcc g++ make libncurses-dev nasm libsdl-net1.2-dev libsdl2-net-dev libpcap-dev libslirp-dev fluidsynth libfluidsynth-dev libavdevice58 libavformat-dev libavcodec-dev libavcodec-extra libavcodec-extra58 libswscale-dev libfreetype-dev libxkbfile-dev libxrandr-dev
       
       - name: Build & Install
-        if: false
         env:
           RUN_NSUFF: ${{ matrix.variant }}
         run: |
@@ -40,14 +38,6 @@ jobs:
           ./build-debug$RUN_NSUFF
           sudo make install
           
-      - name: Regenerate files
-        if: matrix.variant == ''
-        run: |
-          git clean -dfx > /dev/null
-          git pull --tags -f --unshallow > /dev/null
-          git revert f05db4c8238e70159155656a0900510efd543097
-          git push
-
   build_rpm:
     name: Build RPM on Fedora
     if: github.event_name == 'release'
