@@ -28,10 +28,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install automake gcc g++ make libncurses-dev nasm libsdl-net1.2-dev libsdl2-net-dev libpcap-dev libslirp-dev fluidsynth libfluidsynth-dev libavdevice58 libavformat-dev libavcodec-dev libavcodec-extra libavcodec-extra58 libswscale-dev libfreetype-dev libxkbfile-dev libxrandr-dev dos2unix
+          sudo apt-get install automake gcc g++ make libncurses-dev nasm libsdl-net1.2-dev libsdl2-net-dev libpcap-dev libslirp-dev fluidsynth libfluidsynth-dev libavdevice58 libavformat-dev libavcodec-dev libavcodec-extra libavcodec-extra58 libswscale-dev libfreetype-dev libxkbfile-dev libxrandr-dev
       
-      # TODO: tests?
-      # also i wonder why the debug variant is preferred?
       - name: Build & Install
         env:
           RUN_NSUFF: ${{ matrix.variant }}
@@ -40,23 +38,13 @@ jobs:
           chmod +x build-debug$RUN_NSUFF
           ./build-debug$RUN_NSUFF
           sudo make install
-          
-      # TODO: also update ref and translation on repo here? 
+
       - name: Regenerate files
         if: matrix.variant == ''
         continue-on-error: true
         run: |
-          # revert timestamp changes
-          # these shouldn't even be pushed
-          git checkout HEAD -- include/build_timestamp.h
-          git checkout HEAD -- contrib/linux/com.dosbox_x.DOSBox-X.metainfo.xml.in
-          chmod +x src/dosbox-x
-          src/dosbox-x -defaultconf -defaultdir . -silent -c 'config -wcp dosbox-x.reference.conf' -c 'config -all -wcp dosbox-x.reference.full.conf' -c 'config -setup -wcp contrib/windows/installer/dosbox-x.reference.setup.conf'
-          dos2unix dosbox-x.reference.conf
-          dos2unix dosbox-x.reference.full.conf
-          unix2dos contrib/windows/installer/dosbox-x.reference.setup.conf
-          src/dosbox-x -defaultconf -defaultdir . -silent -c "config -ln \"English (United States)\" -wl contrib/translations/en/en_US.lng"
-          git commit -am "Regenerate files"
+          git clean -dfx
+          git revert f05db4c
           git push
           
   build_rpm:
