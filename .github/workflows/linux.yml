@@ -17,6 +17,12 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+        
+      - name: Prepare git
+        if: matrix.variant == ''
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Install dependencies
         run: |
@@ -31,6 +37,16 @@ jobs:
           chmod +x build-debug$RUN_NSUFF
           ./build-debug$RUN_NSUFF
           sudo make install
+          
+      - name: Regenerate files
+        if: matrix.variant == ''
+        continue-on-error: true
+        run: |
+          make clean
+          git clean -dfx
+          git pull --rebase
+          git revert f05db4c8238e70159155656a0900510efd543097
+          git push
 
   build_rpm:
     name: Build RPM on Fedora
