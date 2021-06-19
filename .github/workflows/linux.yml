@@ -18,6 +18,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
       
+      - name: Prepare git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -39,9 +45,6 @@ jobs:
         if: matrix.variant == ''
         continue-on-error: true
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --rebase
           # revert timestamp changes
           # these shouldn't even be pushed
           git checkout HEAD -- include/build_timestamp.h
