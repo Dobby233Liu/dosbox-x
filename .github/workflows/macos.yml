@@ -31,9 +31,10 @@ jobs:
     strategy:
       matrix:
         variant: ["", "-sdl2"]
-        arch: [x86_64, arm64, universal]
+        arch: [x86_64] #, arm64, universal]
     steps:
       - name: Hax before 11
+        if: false # true when can arm64
         run: |
           # Hack macOS 10.x to allow arm64* build support
           if [ "$(sw_vers -productVersion | cut -d'.' -f1)" = 10 ]; then
