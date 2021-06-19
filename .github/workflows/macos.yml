@@ -77,10 +77,15 @@ jobs:
           if [ $TARGET_ARCH = "arm64" ]; then
             x=arm64-apple-macos11
           fi
+          xh=x86_64-apple-darwin
+          if [ $TARGET_ARCH = "arm64" ]; then
+            xh=aarch64-apple-darwin
+          fi
           export CFLAGS+=" -target $x -arch $TARGET_ARCH"
           export CXXFLAGS+=" -target $x -arch $TARGET_ARCH"
+          export LDFLAGS+=" -target $x -arch $TARGET_ARCH"
           chmod +x build-macosx$RUN_NSUFF
-          ./build-macosx$RUN_NSUFF CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS"
+          ./build-macosx$RUN_NSUFF CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" --host=$xh
       - name: Build (universal)
         if: matrix.arch == 'universal'
         env:
@@ -88,16 +93,20 @@ jobs:
         run: |
           OCFL=$CFLAGS
           OCXFL=$CXXFLAGS
+          OLDFL=$LDFLAGS
           chmod +x build-macosx$RUN_NSUFF
           export CFLAGS+=" -target x86_64-apple-macos10.12 -arch x86_64"
           export CXXFLAGS+=" -target x86_64-apple-macos10.12 -arch x86_64"
-          ./build-macosx$RUN_NSUFF CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS"
+          export LDFLAGS+=" -target x86_64-apple-macos10.12 -arch x86_64"
+          ./build-macosx$RUN_NSUFF CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" --host=x86_64-apple-darwin
           export CFLAGS=$OCFL
           export CXXFLAGS=$OCXFL
+          export LDFLAGS=$OLDFL
           cp src/dosbox-x src/dosbox-x-1
           export CFLAGS+=" -target arm64-apple-macos11 -arch arm64"
           export CXXFLAGS+=" -target arm64-apple-macos11 -arch arm64"
-          ./build-macosx$RUN_NSUFF CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS"
+          export LDFLAGS+=" -target arm64-apple-macos11 -arch arm64"
+          ./build-macosx$RUN_NSUFF CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" --host=aarch64-apple-darwin
           cp src/dosbox-x src/dosbox-x-2
           lipo -create -output src/dosbox-x src/dosbox-x-1 src/dosbox-x-2
       - name: Check if arch correct [DEBUG]
