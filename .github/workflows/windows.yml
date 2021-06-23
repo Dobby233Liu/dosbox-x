@@ -147,6 +147,8 @@ jobs:
         
       # NTS: msys2's ffmpeg package is currently broken (by a lot!)
       # looking for just building using repo ffmpeg, some patches are already online
+      # TODO: for the while being... we should switch to vcpkg ffmpeg[all-gpl] instead?
+      # this one is kinda broken too
       - name: Cache ffmpeg
         id: cache-ffmpeg
         uses: actions/cache@v2
@@ -235,8 +237,6 @@ jobs:
   mingw-hx-dos:
     name: Build for HX-DOS
     runs-on: windows-latest
-    
-    if: false # FIXME
       
     defaults:
       run:
