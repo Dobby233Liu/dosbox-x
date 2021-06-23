@@ -31,7 +31,7 @@ jobs:
     strategy:
       matrix:
         variant: ["", "-sdl2"]
-        arch: [x86_64] #, arm64, universal]
+        arch: [x86_64] #, arm64, universal] FIXME: arm64 cross-compilation is hard
     steps:
       - name: Hax before 11
         if: false # true when can arm64
@@ -65,8 +65,9 @@ jobs:
           path: ${{ steps.prep-caches.outputs.brew_dir }}
           key:  brew-cache-${{ steps.prep-caches.outputs.today }}-${{ matrix.variant }}${{ matrix.arch }}
           restore-keys: brew-cache--
+      # NTS: AS might be supported
       - name: Install dependencies
-        run: brew install autoconf automake libtool ncurses nasm freetype fluid-synth libslirp pkg-config
+        run: brew install autoconf automake libtool ncurses nasm freetype fluid-synth libslirp ffmpeg pkg-config
         
       - name: Build
         if: matrix.arch != 'universal'
