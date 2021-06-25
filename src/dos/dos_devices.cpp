@@ -18,6 +18,8 @@
 
 
 #include <string.h>
+
+#include "control.h"
 #include "dosbox.h"
 #include "callback.h"
 #include "regs.h"
@@ -724,7 +726,7 @@ uint8_t DOS_FindDevice(char const * name) {
 //	if(!name || !(*name)) return DOS_DEVICES; //important, but makename does it
 	if (!DOS_MakeName(name,fullname,&drive)) return DOS_DEVICES;
 
-	char* name_part = strrchr(fullname,'\\');
+	char* name_part = strrchr_dbcs(fullname,'\\');
 	if(name_part) {
 		*name_part++ = 0;
 		//Check validity of leading directory.

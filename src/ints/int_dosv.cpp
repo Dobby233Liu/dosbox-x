@@ -47,7 +47,7 @@
 #define DBCS24_LEN 65536 * 72
 #define SBCS24_LEN 256 * 48
 
-#if defined(LINUX)
+#if defined(LINUX) && C_X11
 static Display *font_display;
 static Window font_window;
 static Pixmap font_pixmap;
@@ -94,22 +94,23 @@ static HFONT jfont_16;
 static HFONT jfont_24;
 #endif
 
+bool gbk = false;
 bool nokanji = false;
 bool yen_flag = false;
 bool jfont_init = false;
 uint8_t TrueVideoMode;
 void ResolvePath(std::string& in);
 void SetIMPosition();
+bool isDBCSCP();
 bool INT10_SetDOSVModeVtext(uint16_t mode, enum DOSV_VTEXT_MODE vtext_mode);
 bool CodePageGuestToHostUTF16(uint16_t *d/*CROSS_LEN*/,const char *s/*CROSS_LEN*/);
 bool CodePageHostToGuestUTF16(char *d/*CROSS_LEN*/,const uint16_t *s/*CROSS_LEN*/);
-bool isDBCSCP(), isDBCSLB(uint8_t chr, uint8_t* lead);
 extern uint8_t lead[6];
 
 bool isKanji1(uint8_t chr) {
     if (nokanji) return false;
     else if (dos.loaded_codepage == 936 || IS_PDOSV)
-        return (chr >= 0xa1 && chr <= 0xfe);
+        return (chr >= (gbk?0x81:0xa1) && chr <= 0xfe);
     else if (dos.loaded_codepage == 949 || dos.loaded_codepage == 950 || IS_CDOSV || IS_KDOSV)
         return (chr >= 0x81 && chr <= 0xfe);
     else
@@ -603,7 +604,7 @@ bool MakeSbcs16Font() {
 		if(!GetWindowsFont(code, &jfont_sbcs_16[code * 16], 8, 16))
 			return false;
 	}
-	if (IS_JDOSV) memcpy(jfont_sbcs_16, dosv_font16_data, sizeof(dosv_font16_data));
+	if (IS_JDOSV||IS_JEGA_ARCH) memcpy(jfont_sbcs_16, dosv_font16_data, sizeof(dosv_font16_data));
 	else if (IS_DOSV) for(Bitu ct = 0 ; ct < 0x100 ; ct++) memcpy(&jfont_sbcs_16[ct * 16], &int10_font_16[ct * 16], 16);
 	return true;
 }
@@ -618,7 +619,7 @@ bool MakeSbcs19Font() {
 		}
 	}
 	if (fail) memcpy(jfont_sbcs_19, JPNHN19X+NAME_LEN+ID_LEN+3, SBCS19_LEN);
-	if (IS_JDOSV) memcpy(jfont_sbcs_19, dosv_font19_data, sizeof(dosv_font19_data));
+	if (IS_JDOSV||IS_JEGA_ARCH) memcpy(jfont_sbcs_19, dosv_font19_data, sizeof(dosv_font19_data));
 	else if (IS_DOSV) for(Bitu ct = 0 ; ct < 0x100 ; ct++) memcpy(&jfont_sbcs_19[ct * 19 + 1], &int10_font_16[ct * 16], 16);
 	return true;
 }
@@ -629,7 +630,7 @@ bool MakeSbcs24Font() {
 		if(!GetWindowsFont(code, &jfont_sbcs_24[code * 24 * 2], 12, 24))
 			return false;
 	}
-	if (IS_JDOSV) memcpy(jfont_sbcs_24, dosv_font24_data, sizeof(dosv_font24_data));
+	if (IS_JDOSV||IS_JEGA_ARCH) memcpy(jfont_sbcs_24, dosv_font24_data, sizeof(dosv_font24_data));
 	else if (IS_DOSV) for(Bitu ct = 0 ; ct < 0x100 ; ct++) memcpy(&jfont_sbcs_24[ct * 24], &int10_font_16[ct * 16], 16);
 	return true;
 }
@@ -654,7 +655,7 @@ void JFONT_Init() {
 					memcpy(&jfont_sbcs_19[ct * 19 + 1], &int10_font_16[ct * 16], 16);
 #endif
 			}
-		} else if(yen_flag) {
+		} else if(yen_flag && !(IS_DOSV && !IS_JDOSV)) {
 			if(!CheckEmptyData(&jfont_sbcs_19[0x7f * 19], 19))
 				memcpy(&jfont_sbcs_19[0x5c * 19], &jfont_sbcs_19[0x7f * 19], 19);
 		}
@@ -686,7 +687,7 @@ void JFONT_Init() {
 					memcpy(jfont_sbcs_16, int10_font_16, 256 * 16);
 #endif
 				}
-			} else if(yen_flag) {
+			} else if(yen_flag && !(IS_DOSV && !IS_JDOSV)) {
 				if(!CheckEmptyData(&jfont_sbcs_16[0x7f * 16], 16))
 					memcpy(&jfont_sbcs_16[0x5c * 16], &jfont_sbcs_16[0x7f * 16], 16);
 			}
@@ -709,7 +710,7 @@ void JFONT_Init() {
 				if(!MakeSbcs24Font()) {
 					LOG_MSG("MSG: SBCS 12x24 font file path is not specified.\n");
 				}
-			} else if(yen_flag) {
+			} else if(yen_flag && !(IS_DOSV && !IS_JDOSV)) {
 				if(!CheckEmptyData(&jfont_sbcs_24[0x7f * 2 * 24], 2 * 24))
 					memcpy(&jfont_sbcs_24[0x5c * 2 * 24], &jfont_sbcs_24[0x7f * 2 * 24], 2 * 24);
 			}

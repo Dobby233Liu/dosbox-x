@@ -187,10 +187,7 @@ template <class MT> bool String_SBCS_TO_HOST_UTF16(uint16_t *d/*CROSS_LEN*/,cons
             if (ic>=0xA1&&ic<=0xDF) wc = cpMap_PC98[ic];
             else {
                 std::map<int, int>::iterator it = lowboxdrawmap.find(ic);
-                if (lowboxdrawmap.find(ic)==lowboxdrawmap.end())
-                    wc = map[ic];
-                else
-                    wc = map[it->second];
+                wc = map[lowboxdrawmap.find(ic)==lowboxdrawmap.end()?ic:it->second];
             }
         } else
 #endif
@@ -725,6 +722,121 @@ char *CodePageHostToGuestL(const host_cnv_char_t *s) {
         return NULL;
 
     return (char*)cpcnv_ltemp;
+}
+
+extern uint16_t fztime, fzdate;
+extern bool force_conversion, InitCodePage();
+std::string GetDOSBoxXPath(bool withexe=false);
+void drivezRegister(std::string path, std::string dir) {
+    int cp = dos.loaded_codepage;
+    force_conversion = true;
+    InitCodePage();
+    force_conversion = false;
+    char exePath[CROSS_LEN];
+    std::vector<std::string> names;
+    if (path.size()) {
+#if defined(WIN32)
+        HANDLE hFind;
+        WIN32_FIND_DATA fd;
+        WIN32_FIND_DATAW fdw;
+        host_cnv_char_t *host_name = CodePageGuestToHost((path+"\\*.*").c_str());
+        if (host_name != NULL) hFind = FindFirstFileW(host_name, &fdw);
+        else hFind = FindFirstFile((path+"\\*.*").c_str(), &fd);
+        if (hFind != INVALID_HANDLE_VALUE) {
+            do {
+                const char* temp_name = NULL;
+                if (host_name != NULL) temp_name = CodePageHostToGuest(fdw.cFileName);
+                if (!((host_name != NULL ? fdw.dwFileAttributes : fd.dwFileAttributes) & FILE_ATTRIBUTE_DIRECTORY)) {
+                    if (host_name == NULL)
+                        names.emplace_back(fd.cFileName);
+                    else if (temp_name != NULL)
+                        names.emplace_back(temp_name);
+                } else if ((host_name == NULL || temp_name != NULL) && strcmp(host_name != NULL ? temp_name : fd.cFileName, ".") && strcmp(host_name != NULL ? temp_name : fd.cFileName, ".."))
+                    names.push_back(std::string(host_name == NULL ? fd.cFileName : temp_name)+"/");
+            } while(host_name != NULL ? FindNextFileW(hFind, &fdw) : FindNextFile(hFind, &fd));
+            FindClose(hFind);
+        }
+#else
+        struct dirent *dir;
+        host_cnv_char_t *host_name = CodePageGuestToHost(path.c_str());
+        DIR *d = opendir(host_name != NULL ? host_name : path.c_str());
+        if (d) {
+            while ((dir = readdir(d)) != NULL) {
+                host_cnv_char_t *temp_name = CodePageHostToGuest(dir->d_name);
+                if (dir->d_type == DT_REG)
+                    names.push_back(temp_name!=NULL?temp_name:dir->d_name);
+                else if (dir->d_type == DT_DIR && strcmp(temp_name != NULL ? temp_name : dir->d_name, ".") && strcmp(temp_name != NULL ? temp_name : dir->d_name, ".."))
+                    names.push_back(std::string(temp_name != NULL ? temp_name : dir->d_name) + "/");
+            }
+            closedir(d);
+        }
+#endif
+    }
+    int res;
+    long f_size;
+    uint8_t *f_data;
+    struct stat temp_stat;
+    const struct tm* ltime;
+    const host_cnv_char_t* host_name;
+    for (std::string name: names) {
+        if (!name.size()) continue;
+        if (name.back()=='/' && dir=="/") {
+            ht_stat_t temp_stat;
+            host_name = CodePageGuestToHost((path+CROSS_FILESPLIT+name).c_str());
+            res = host_name == NULL ? 1 : ht_stat(host_name,&temp_stat);
+            if (res) {
+                host_name = CodePageGuestToHost((GetDOSBoxXPath()+path+CROSS_FILESPLIT+name).c_str());
+                res = ht_stat(host_name,&temp_stat);
+            }
+            if (res==0&&(ltime=localtime(&temp_stat.st_mtime))!=0) {
+                fztime=DOS_PackTime((uint16_t)ltime->tm_hour,(uint16_t)ltime->tm_min,(uint16_t)ltime->tm_sec);
+                fzdate=DOS_PackDate((uint16_t)(ltime->tm_year+1900),(uint16_t)(ltime->tm_mon+1),(uint16_t)ltime->tm_mday);
+            }
+            VFILE_Register(name.substr(0, name.size()-1).c_str(), 0, 0, dir.c_str());
+            fztime = fzdate = 0;
+            drivezRegister(path+CROSS_FILESPLIT+name.substr(0, name.size()-1), dir+name);
+            continue;
+        }
+        FILE * f = NULL;
+        host_cnv_char_t *host_name = CodePageGuestToHost((path+CROSS_FILESPLIT+name).c_str());
+        if (host_name != NULL) {
+#ifdef host_cnv_use_wchar
+            f = _wfopen(host_name, L"rb");
+#else
+            f = fopen(host_name, "rb");
+#endif
+        }
+        if (f == NULL) {
+            strcpy(exePath, GetDOSBoxXPath().c_str());
+            strcat(exePath, (path+CROSS_FILESPLIT+name).c_str());
+            host_name = CodePageGuestToHost(exePath);
+            if (host_name != NULL) {
+#ifdef host_cnv_use_wchar
+                f = _wfopen(host_name, L"rb");
+#else
+                f = fopen(host_name, "rb");
+#endif
+            }
+        }
+        f_size = 0;
+        f_data = NULL;
+        if (f != NULL) {
+            res=fstat(fileno(f),&temp_stat);
+            if (res==0&&(ltime=localtime(&temp_stat.st_mtime))!=0) {
+                fztime=DOS_PackTime((uint16_t)ltime->tm_hour,(uint16_t)ltime->tm_min,(uint16_t)ltime->tm_sec);
+                fzdate=DOS_PackDate((uint16_t)(ltime->tm_year+1900),(uint16_t)(ltime->tm_mon+1),(uint16_t)ltime->tm_mday);
+            }
+            fseek(f, 0, SEEK_END);
+            f_size=ftell(f);
+            f_data=(uint8_t*)malloc(f_size);
+            fseek(f, 0, SEEK_SET);
+            fread(f_data, sizeof(char), f_size, f);
+            fclose(f);
+        }
+        if (f_data) VFILE_Register(name.c_str(), f_data, f_size, dir=="/"?"":dir.c_str());
+        fztime = fzdate = 0;
+    }
+    dos.loaded_codepage = cp;
 }
 
 bool localDrive::FileCreate(DOS_File * * file,const char * name,uint16_t attributes) {
@@ -3526,7 +3638,7 @@ bool Overlay_Drive::MakeDir(const char * dir) {
 	}
 	char newdir[CROSS_LEN],sdir[CROSS_LEN],pdir[CROSS_LEN];
 	strcpy(sdir,dir);
-	char *p=strrchr(sdir,'\\');
+	char *p=strrchr_dbcs(sdir,'\\');
 	if (p!=NULL) {
 		*p=0;
 		char *temp_name=dirCache.GetExpandName(GetCrossedName(basedir,sdir));
@@ -3540,7 +3652,7 @@ bool Overlay_Drive::MakeDir(const char * dir) {
 	strcpy(newdir,overlaydir);
 	strcat(newdir,sdir);
 	CROSS_FILENAME(newdir);
-	p=strrchr(sdir,'\\');
+	p=strrchr_dbcs(sdir,'\\');
 	int temp=-1;
 	bool madepdir=false;
 	const host_cnv_char_t* host_name;
@@ -3684,7 +3796,7 @@ FILE* Overlay_Drive::create_file_in_overlay(const char* dos_filename, char const
 		f = fopen_wrap(newname,mode);
 	}
 	//Check if a directory is part of the name:
-	char* dir = strrchr((char *)dos_filename,'\\');
+	char* dir = strrchr_dbcs((char *)dos_filename,'\\');
 	if (!f && dir && *dir) {
 		if (logoverlay) LOG_MSG("Overlay: warning creating a file inside a directory %s",dos_filename);
 		//ensure they exist, else make them in the overlay if they exist in the original....
@@ -3692,7 +3804,7 @@ FILE* Overlay_Drive::create_file_in_overlay(const char* dos_filename, char const
 		//try again
 		char temp_name[CROSS_LEN],tmp[CROSS_LEN];
 		strcpy(tmp, dos_filename);
-		char *p=strrchr(tmp, '\\');
+		char *p=strrchr_dbcs(tmp, '\\');
 		assert(p!=NULL);
 		*p=0;
 		bool found=false;
@@ -3844,7 +3956,7 @@ void Overlay_Drive::convert_overlay_to_DOSname_in_base(char* dirname )
 			char* p = t;
 			char* b = t;
 
-			while ( (p =strchr(p,CROSS_FILESPLIT)) ) {
+			while ( (p =strchr_dbcs(p,CROSS_FILESPLIT)) ) {
 				char directoryname[CROSS_LEN]={0};
 				char dosboxdirname[CROSS_LEN]={0};
 				strcpy(directoryname,dirname);
@@ -4025,12 +4137,12 @@ void Overlay_Drive::remove_DOSname_from_cache(const char* name) {
 }
 
 bool Overlay_Drive::Sync_leading_dirs(const char* dos_filename){
-	const char* lastdir = strrchr(dos_filename,'\\');
+	const char* lastdir = strrchr_dbcs((char *)dos_filename,'\\');
 	//If there are no directories, return success.
 	if (!lastdir) return true; 
 	
 	const char* leaddir = dos_filename;
-	while ( (leaddir=strchr(leaddir,'\\')) != 0) {
+	while ( (leaddir=strchr_dbcs((char *)leaddir,'\\')) != 0) {
 		char dirname[CROSS_LEN] = {0};
 		strncpy(dirname,dos_filename,leaddir-dos_filename);
 
@@ -4243,7 +4355,7 @@ void Overlay_Drive::update_cache(bool read_directory_contents) {
 		dirCache.AddEntryDirOverlay(fakename,sdir,true);
 		if (strlen(sdir)) {
 			strcpy(tmp,(*(i+1)).c_str());
-			p=strrchr(tmp, '\\');
+			p=strrchr_dbcs(tmp, '\\');
 			if (p==NULL) *(i+1)=std::string(sdir);
 			else {
 				*p=0;
@@ -4537,10 +4649,10 @@ bool Overlay_Drive::SetFileAttr(const char * name,uint16_t attr) {
 	CROSS_FILENAME(overlayname);
 	char* temp_name = dirCache.GetExpandName(GetCrossedName(basedir,name));
 	strcpy(tmp, name);
-	char *q=strrchr(tmp, '\\');
+	char *q=strrchr_dbcs(tmp, '\\');
 	if (q!=NULL) *(q+1)=0;
 	else *tmp=0;
-	char *p=strrchr(temp_name, '\\');
+	char *p=strrchr_dbcs(temp_name, '\\');
 	if (p!=NULL)
 		strcat(tmp,p+1);
 	else
@@ -4679,10 +4791,10 @@ bool Overlay_Drive::GetFileAttr(const char * name,uint16_t * attr) {
 	CROSS_FILENAME(overlayname);
 	char* temp_name = dirCache.GetExpandName(GetCrossedName(basedir,name));
 	strcpy(tmp, name);
-	char *q=strrchr(tmp, '\\');
+	char *q=strrchr_dbcs(tmp, '\\');
 	if (q!=NULL) *(q+1)=0;
 	else *tmp=0;
-	char *p=strrchr(temp_name, '\\');
+	char *p=strrchr_dbcs(temp_name, '\\');
 	if (p!=NULL)
 		strcat(tmp,p+1);
 	else
@@ -4755,10 +4867,10 @@ void Overlay_Drive::add_deleted_file(const char* name,bool create_on_disk) {
 	CROSS_FILENAME(tname);
 	char* temp_name = dirCache.GetExpandName(tname);
 	strcpy(tname, name);
-	char *q=strrchr(tname, '\\');
+	char *q=strrchr_dbcs(tname, '\\');
 	if (q!=NULL) *(q+1)=0;
 	else *tname=0;
-	char *p=strrchr(temp_name, '\\');
+	char *p=strrchr_dbcs(temp_name, '\\');
 	if (p!=NULL)
 		strcat(tname,p+1);
 	else
@@ -4868,10 +4980,10 @@ bool Overlay_Drive::is_deleted_file(const char* name) {
 	CROSS_FILENAME(tname);
 	char* temp_name = dirCache.GetExpandName(tname);
 	strcpy(tname, name);
-	char *q=strrchr(tname, '\\');
+	char *q=strrchr_dbcs(tname, '\\');
 	if (q!=NULL) *(q+1)=0;
 	else *tname=0;
-	char *p=strrchr(temp_name, '\\');
+	char *p=strrchr_dbcs(temp_name, '\\');
 	if (p!=NULL)
 		strcat(tname,p+1);
 	else
@@ -4920,10 +5032,10 @@ void Overlay_Drive::remove_deleted_file(const char* name,bool create_on_disk) {
 	CROSS_FILENAME(tname);
 	char* temp_name = dirCache.GetExpandName(tname);
 	strcpy(tname, name);
-	char *q=strrchr(tname, '\\');
+	char *q=strrchr_dbcs(tname, '\\');
 	if (q!=NULL) *(q+1)=0;
 	else *tname=0;
-	char *p=strrchr(temp_name, '\\');
+	char *p=strrchr_dbcs(temp_name, '\\');
 	if (p!=NULL)
 		strcat(tname,p+1);
 	else
@@ -4977,7 +5089,7 @@ void Overlay_Drive::remove_deleted_path(const char* name, bool create_on_disk) {
 	}
 }
 bool Overlay_Drive::check_if_leading_is_deleted(const char* name){
-	const char* dname = strrchr(name,'\\');
+	const char* dname = strrchr_dbcs((char *)name,'\\');
 	if (dname != NULL) {
 		char dirname[CROSS_LEN];
 		strncpy(dirname,name,dname - name);
@@ -5077,7 +5189,7 @@ bool Overlay_Drive::Rename(const char * oldname,const char * newname) {
 				(host_nameold, CodePageGuestToHost(overlaynameold));
 			}
 			strcpy(tmp,newname);
-			char *p=strrchr(tmp,'\\'), ndir[CROSS_LEN];
+			char *p=strrchr_dbcs(tmp,'\\'), ndir[CROSS_LEN];
 			if (p!=NULL) {
 				*p=0;
 				temp_name=dirCache.GetExpandName(GetCrossedName(basedir,tmp));
@@ -5147,7 +5259,7 @@ bool Overlay_Drive::Rename(const char * oldname,const char * newname) {
 			(host_nameold, CodePageGuestToHost(overlaynameold));
 		}
 		strcpy(tmp,newname);
-		char *p=strrchr(tmp,'\\'), ndir[CROSS_LEN];
+		char *p=strrchr_dbcs(tmp,'\\'), ndir[CROSS_LEN];
 		if (p!=NULL) {
 			*p=0;
 			temp_name=dirCache.GetExpandName(GetCrossedName(basedir,tmp));
@@ -5297,7 +5409,7 @@ bool Overlay_Drive::FileStat(const char* name, FileStat_Block * const stat_block
 	}
 	if (!success) {
 		strcpy(tmp,name);
-		char *p=strrchr(tmp, '\\'), *q=strrchr(temp_name, '\\');
+		char *p=strrchr_dbcs(tmp, '\\'), *q=strrchr_dbcs(temp_name, '\\');
 		if (p!=NULL&&q!=NULL) {
 			*p=0;
 			for(std::vector<std::string>::iterator it = DOSdirs_cache.begin(); it != DOSdirs_cache.end(); it+=2)

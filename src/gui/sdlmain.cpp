@@ -105,6 +105,7 @@ void GFX_OpenGLRedrawScreen(void), InitFontHandle();
 # endif
 #endif
 
+#include "control.h"
 #include "dosbox.h"
 #include "menudef.h"
 #include "pic.h"
@@ -1120,6 +1121,15 @@ void KeyboardLayoutDetect(void) {
     LOG_MSG("Host keyboard layout is now %s (%s)",
         DKM_to_string(host_keyboard_layout),
         DKM_to_descriptive_string(host_keyboard_layout));
+
+    if (IS_PC98_ARCH) {
+        Section_prop * pc98_section = static_cast<Section_prop *>(control->GetSection("pc98"));
+        const char *layoutstr = pc98_section->Get_string("pc-98 force ibm keyboard layout");
+        if (!strcasecmp(layoutstr, "auto")) {
+            pc98_force_ibm_layout = host_keyboard_layout == DKM_US;
+            mainMenu.get_item("pc98_use_uskb").check(pc98_force_ibm_layout).refresh_item(mainMenu);
+        }
+    }
 }
 
 void SetMapperKeyboardLayout(const unsigned int dkm) {
@@ -1635,6 +1645,31 @@ bool CheckQuit(void) {
         return systemmessagebox("Quit DOSBox-X warning","You are currently running a program or game.\nAre you sure to quit anyway now?","yesno", "question", 1);
 #endif
     return true;
+}
+
+void NewInstanceEvent(bool pressed) {
+    if (!pressed) return;
+#if defined(MACOSX)
+    pid_t p = fork();
+    if (p == 0) {
+        /* child process */
+        char *argv[8];
+        extern std::string MacOSXEXEPath;
+        {
+            int fd = open("/dev/null",O_RDWR);
+            dup2(fd,0);
+            dup2(fd,1);
+            dup2(fd,2);
+            close(fd);
+        }
+        chdir("/");
+        argv[0] = (char*)MacOSXEXEPath.c_str();
+        argv[1] = NULL;
+        execv(argv[0],argv);
+        fprintf(stderr,"Failed to exec to %s\n",argv[0]);
+        _exit(1);
+    }
+#endif
 }
 
 void CPU_Snap_Back_To_Real_Mode();
@@ -2491,7 +2526,7 @@ void MenuDrawTextChar(int &x,int y,unsigned char c,Bitu color,bool check) {
 
     if (OpenGL_using()) {
 #if C_OPENGL
-        if ((IS_PC98_ARCH || IS_JEGA_ARCH || isDBCSCP()) && control->opt_lang.size()) {
+        if ((IS_PC98_ARCH || IS_JEGA_ARCH || isDBCSCP()) && control->opt_lang.size() && (c || !check)) {
             glBindTexture(GL_TEXTURE_2D,prevc?SDLDrawGenDBCSFontTexture:SDLDrawGenFontTexture);
             glPushMatrix();
             glMatrixMode (GL_TEXTURE);
@@ -2523,7 +2558,7 @@ void MenuDrawTextChar(int &x,int y,unsigned char c,Bitu color,bool check) {
             x += (int)mainMenu.fontCharWidth;
         }
 
-        if ((IS_PC98_ARCH || IS_JEGA_ARCH || isDBCSCP()) && control->opt_lang.size()) {
+        if ((IS_PC98_ARCH || IS_JEGA_ARCH || isDBCSCP()) && control->opt_lang.size() && (c || !check)) {
             glTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
             glBlendFunc(GL_ONE, GL_ZERO);
             glDisable(GL_ALPHA_TEST);
@@ -2609,7 +2644,7 @@ void MenuDrawTextChar2x(int &x,int y,unsigned char c,Bitu color,bool check) {
 
     if (OpenGL_using()) {
 #if C_OPENGL
-        if ((IS_PC98_ARCH || IS_JEGA_ARCH || isDBCSCP()) && control->opt_lang.size()) {
+        if ((IS_PC98_ARCH || IS_JEGA_ARCH || isDBCSCP()) && control->opt_lang.size() && (c || !check)) {
             glBindTexture(GL_TEXTURE_2D,prevc?SDLDrawGenDBCSFontTexture:SDLDrawGenFontTexture);
             glPushMatrix();
             glMatrixMode (GL_TEXTURE);
@@ -2641,7 +2676,7 @@ void MenuDrawTextChar2x(int &x,int y,unsigned char c,Bitu color,bool check) {
             x += (int)mainMenu.fontCharWidth;
         }
 
-        if ((IS_PC98_ARCH || IS_JEGA_ARCH || isDBCSCP()) && control->opt_lang.size()) {
+        if ((IS_PC98_ARCH || IS_JEGA_ARCH || isDBCSCP()) && control->opt_lang.size() && (c || !check)) {
             glTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
             glBlendFunc(GL_ONE, GL_ZERO);
             glDisable(GL_ALPHA_TEST);
@@ -2708,9 +2743,14 @@ void MenuDrawTextChar2x(int &x,int y,unsigned char c,Bitu color,bool check) {
 }
 
 void MenuDrawText(int x,int y,const char *text,Bitu color,bool check=false) {
+    bool use0 = false;
 #if C_OPENGL
     if (OpenGL_using()) {
-        glBindTexture(GL_TEXTURE_2D,SDLDrawGenFontTexture);
+        if (check&&(text[0]&0xFF)==0xFB) {
+            use0 = true;
+            UpdateSDLDrawDBCSTexture(0);
+        }
+        glBindTexture(GL_TEXTURE_2D,use0?SDLDrawGenDBCSFontTexture:SDLDrawGenFontTexture);
 
         glPushMatrix();
 
@@ -2731,12 +2771,12 @@ void MenuDrawText(int x,int y,const char *text,Bitu color,bool check=false) {
     prevc = 0;
     while (*text != 0) {
         if (mainMenu.fontCharScale >= 2)
-            MenuDrawTextChar2x(x,y,(unsigned char)(*text++),color,check);
+            MenuDrawTextChar2x(x,y,use0?0:(unsigned char)*text,color,check);
         else
-            MenuDrawTextChar(x,y,(unsigned char)(*text++),color,check);
+            MenuDrawTextChar(x,y,use0?0:(unsigned char)*text,color,check);
+        text++;
     }
     if (prevc>1) {
-        prevc = 0;
         if (mainMenu.fontCharScale >= 2)
             MenuDrawTextChar2x(x,y,prevc,color,true);
         else
@@ -5613,6 +5653,22 @@ static void GUI_StartUp() {
     item->set_text("Quick launch program...");
 #endif
 
+#if defined(MACOSX)
+    MAPPER_AddHandler(NewInstanceEvent, MK_nothing, 0, "newinst", "Start new instance", &item);
+    item->set_text("Start new instance");
+    {
+        bool enable = false;
+        extern std::string MacOSXEXEPath;
+        if (!MacOSXEXEPath.empty()) {
+            if (MacOSXEXEPath.at(0) == '/') {
+                enable = true;
+            }
+        }
+        item->enable(enable);
+        item->refresh_item(mainMenu);
+    }
+#endif
+
 #if !defined(C_EMSCRIPTEN)//FIXME: Shutdown causes problems with Emscripten
     MAPPER_AddHandler(KillSwitch,MK_f9,MMOD1,"shutdown","Quit from DOSBox-X", &item); /* KEEP: Most DOSBox-X users may have muscle memory for this */
     item->set_text("Quit from DOSBox-X");
@@ -7314,7 +7370,7 @@ void SetIMPosition() {
 	uint8_t x, y;
 	uint8_t page = IS_PC98_ARCH?0:real_readb(BIOSMEM_SEG,BIOSMEM_CURRENT_PAGE);
 	INT10_GetCursorPos(&y, &x, page);
-    int nrows=25, ncols=80;
+	int nrows=25, ncols=80;
 	if (IS_PC98_ARCH)
 		nrows=real_readb(0x60,0x113) & 0x01 ? 25 : 20;
 	else {
@@ -7325,6 +7381,7 @@ void SetIMPosition() {
         if (y>=nrows-1) y=nrows-8;
         if (x>=ncols-4) x=ncols-4;
     } else {
+        if (IS_PC98_ARCH && x<ncols-3) x+=2;
         x--;
         y--;
     }
@@ -12983,9 +13040,9 @@ int main(int argc, char* argv[]) SDL_MAIN_NOEXCEPT {
 					} else
 						strcpy(linestr, line.substr(4).c_str());
 					p=strchr(linestr, '=');
-					if (p!=NULL&&ttf_section->HandleInputline(line)) {
+					if (p!=NULL&&ttf_section->HandleInputline(line.substr(4))) {
 						*p=0;
-						LOG_MSG("Redirected \"%s\" from [render] to [ttf] section\n", trim(linestr));
+						LOG_MSG("Redirected \"%s\" (\"ttf.%s\") from [render] to [ttf] section\n", trim(linestr), trim(linestr));
 					}
 				}
 			}
@@ -13042,7 +13099,7 @@ int main(int argc, char* argv[]) SDL_MAIN_NOEXCEPT {
 						}
 						if (config_section->HandleInputline(line)) {
 							*p=0;
-							LOG_MSG("Redirected \"%s\" from [dos] to [config] section\n", trim(linestr));
+							LOG_MSG("Redirected \"%s\" (\"%s\") from [dos] to [config] section\n", "dos", trim(linestr));
 						}
 					}
 				}

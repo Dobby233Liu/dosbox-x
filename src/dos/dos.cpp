@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <sys/stat.h>
 
+#include "control.h"
 #include "dosbox.h"
 #include "dos_inc.h"
 #include "bios.h"
@@ -34,6 +35,7 @@
 #include "paging.h"
 #include "callback.h"
 #include "regs.h"
+#include "timer.h"
 #include "menu.h"
 #include "mapper.h"
 #include "drives.h"
@@ -63,12 +65,11 @@ extern bool log_int21, log_fileio;
 extern bool sync_time, manualtime;
 extern int lfn_filefind_handle;
 extern int autofixwarn;
-extern uint8_t lead[6];
 unsigned long totalc, freec;
 uint16_t countryNo = 0;
 Bitu INT29_HANDLER(void);
+bool isDBCSCP();
 uint32_t BIOS_get_PC98_INT_STUB(void);
-bool isDBCSCP(), isDBCSLB(uint8_t chr, uint8_t* lead);
 
 int ascii_toupper(int c) {
     if (c >= 'a' && c <= 'z')
@@ -86,14 +87,8 @@ bool shiftjis_lead_byte(int c) {
 }
 
 char * DBCS_upcase(char * str) {
-    for (int i=0; i<6; i++) lead[i] = 0;
-    if (isDBCSCP())
-        for (int i=0; i<6; i++) {
-            lead[i] = mem_readb(Real2Phys(dos.tables.dbcs)+i);
-            if (lead[i] == 0) break;
-        }
     for (char* idx = str; *idx ; ) {
-        if ((IS_PC98_ARCH && shiftjis_lead_byte(*idx)) || (isDBCSCP() && isDBCSLB(*idx, lead))) {
+        if ((IS_PC98_ARCH && shiftjis_lead_byte(*idx)) || (isDBCSCP() && isKanji1(*idx))) {
             /* Shift-JIS is NOT ASCII and should not be converted to uppercase like ASCII.
              * The trailing byte can be mistaken for ASCII */
             idx++;
@@ -1327,6 +1322,61 @@ static Bitu DOS_21Handler(void) {
             }
             break;
         case 0x2b:      /* Set System Date */
+            if (reg_cx==0x4442 && reg_dx==0x2D58 && reg_al < 0x10) { // Special DOSBox-X functions (4442 = 'DB', 2D58 = '-X')
+                const char * ver = strchr(VERSION, '.');
+                switch (reg_al) {
+                    case 0: // DOSBox-X installation check
+                        reg_al = 0;
+                        break;
+                    case 1: // DOSBox-X SDL version check
+                        reg_al = 0;
+#if defined(C_SDL2)
+                        reg_ah = 2; // SDL2
+#elif defined(SDL_DOSBOX_X_SPECIAL)
+                        reg_ah = 1; // SDL1 (modified)
+#else
+                        reg_ah = 0; // SDL1 (original)
+#endif
+                        break;
+                    case 2: // DOSBox-X platform check
+                        reg_al = 0;
+#if defined(HX_DOS)
+                        reg_bh = 4;
+#elif defined(WIN32)
+                        reg_bh = 1;
+#elif defined(LINUX)
+                        reg_bh = 2;
+#elif defined(MACOSX)
+                        reg_bh = 3;
+#elif defined(OS2)
+                        reg_bh = 5;
+#else
+                        reg_bh = 0;
+#endif
+#if defined(_M_X64) || defined (_M_AMD64) || defined (_M_ARM64) || defined (_M_IA64) || defined(__ia64__) || defined(__LP64__) || defined(_WIN64) || defined(__x86_64__) || defined(__aarch64__) || defined(__powerpc64__)
+                        reg_bl = 2; // 64-bit
+#else
+                        reg_bl = 1; // 32-bit
+#endif
+                        break;
+                    case 3: // DOSBox-X machine check
+                        reg_al = 0;
+                        reg_ah = machine;
+                        break;
+                    case 4: // DOSBox-X version check
+                        reg_al = 0;
+                        reg_ah = ver == NULL ? 0 : atoi(std::string(ver).substr(0, strlen(ver) - strlen(VERSION)).c_str()); // AH: e.g. 0
+                        reg_bh = ver == NULL ? 0 : atoi(ver + 1); // BH: e.g. 83
+                        ver = strchr(ver + 1, '.');
+                        reg_bl = ver == NULL ? 0 : atoi(ver + 1); // BL: e.g. 15
+                        break;
+                    default:
+                        LOG_MSG("DOSBox-X:Illegal subfunction %2X",reg_al);
+                        reg_ax=1;
+                        break;
+                }
+                break;
+            }
             if(date_host_forced) {
                 // unfortunately, BIOS does not return whether succeeded
                 // or not, so do a sanity check first
