@@ -1,7 +1,7 @@
 name: Build for Windows & HX-DOS Extender
 on:
   push:
-  pull_request:
+  pull_request: # todo: add a whitelist
   release:
     types: [published]
 
@@ -314,11 +314,11 @@ jobs:
           asset_name: dosbox-x-mingw-hx-dos.zip
           asset_content_type: application/zip
           
-  installer: # (Wengier)
+  installer:
     name: Build Inno Setup installer
     runs-on: windows-latest
 
-    needs: [vsbuild, mingw] # sources
+    needs: [vsbuild, mingw]
     # running it on every commit is wasteful
     # only run on release
     if: github.event_name == 'release'
@@ -327,7 +327,7 @@ jobs:
       SETUP_DIR: ${{ github.workspace }}\contrib\windows\installer
       ROOT_DIRECTORY: ${{ github.workspace }}
       
-    steps:
+    steps: # todo: sync with build_windows_installer.bat
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -407,13 +407,30 @@ jobs:
               Write-Host " "
             }
           }
-      - name: Copy configs
+      # TODO: can we just use ps replace and forloop?
+      - name: Copy files
         working-directory: ${{ env.SETUP_DIR }}
         run: |
           copy $env:ROOT_DIRECTORY\dosbox-x.reference.conf dosbox-x.reference.conf
           copy $env:ROOT_DIRECTORY\dosbox-x.reference.full.conf dosbox-x.reference.full.conf
           ./unix2dos.exe dosbox-x.reference.conf
           ./unix2dos.exe dosbox-x.reference.full.conf
+          copy /y WizModernImage.bmp allusers\WizModernImage.bmp
+          copy /y DOSBox-X-setup.iss allusers\DOSBox-X-setup.iss
+          .\fart.exe allusers\DOSBox-X-setup.iss "}-setup" "}-setup-allusers"
+          .\fart.exe allusers\DOSBox-X-setup.iss "=lowest" "=admin"
+          .\fart.exe allusers\DOSBox-X-setup.iss ";Privileges" "Privileges"
+          .\fart.exe allusers\DOSBox-X-setup.iss "=..\\" "=..\..\\"
+          .\fart.exe allusers\DOSBox-X-setup.iss "=.\\" "=..\\"
+          .\fart.exe allusers\DOSBox-X-setup.iss "\"..\\" "\"..\..\\"
+          .\fart.exe allusers\DOSBox-X-setup.iss "\".\\" "\"..\\"
+          .\fart.exe allusers\DOSBox-X-setup.iss "File=setup_" "File=..\setup_"
+          .\fart.exe allusers\DOSBox-X-setup.iss "\"Win32_builds" "\"..\Win32_builds"
+          .\fart.exe allusers\DOSBox-X-setup.iss "\"Win64_builds" "\"..\Win64_builds"
+          .\fart.exe allusers\DOSBox-X-setup.iss "{userappdata}" "{commonappdata}"
+          .\fart.exe allusers\DOSBox-X-setup.iss "HKCU;" "HKA;"
+          .\fart.exe allusers\DOSBox-X-setup.iss " IsTaskSelected" " WizardIsTaskSelected"
+          .\fart.exe allusers\DOSBox-X-setup.iss "IsAdminLoggedOn" "IsAdmin"
 
       - name: Build installer
         working-directory: ${{ env.SETUP_DIR }}
