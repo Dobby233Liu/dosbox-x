@@ -1,4 +1,6 @@
-
+---
+title: DOSBox-X - Complete DOS emulation package
+---
 
 <!DOCTYPE html>
 <html>
@@ -11,7 +13,7 @@
     <link rel="stylesheet" type="text/css" media="screen" href="css/style.css">
 
     <script type="text/javascript" src="js/script.js"></script>
-    <title>DOSBox-X - Complete DOS emulation package</title>
+    <title>{% page.title %}</title>
   </head>
 
   <body>
@@ -114,7 +116,7 @@
     </div>
 
     <!-- FOOTER  -->
-    <iframe src="footer.html" onload="this.before((this.contentDocument.body||this.contentDocument).children[0]);this.remove()"></iframe>
+    {% include "footer.html" %}
 
   </body>
 </html>
