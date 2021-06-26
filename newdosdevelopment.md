@@ -11,9 +11,9 @@ There are many other DOS software being actively maintained and updated as well.
 
 * <span style="font-weight: 600">Want to play music?</span> [MPXPLAY](http://mpxplay.sourceforge.net/) is a powerful audio player for DOS that supports many multimedia formats such as MP3, AAC, OGG, and FLAC.
 
-* <span style="font-weight: 600">Want to manage files?</span> [Doszip Commander](https://github.com/nidud/doszip) is a long filename (LFN)-aware file manager (Norton Commander clone) with built-in Zip and UnZip support.</li>
+* <span style="font-weight: 600">Want to manage files?</span> [Doszip Commander](https://github.com/nidud/doszip) is a long filename (LFN)-aware file manager (Norton Commander clone) with built-in Zip and UnZip support.
 
-* <span style="font-weight: 600">Want to program in Pascal?</span> [Free Pascal](https://www.freepascal.org/) is a versatile and open-source Pascal compiler that can target many processor architectures, with DOS version available.</li>
+* <span style="font-weight: 600">Want to program in Pascal?</span> [Free Pascal](https://www.freepascal.org/) is a versatile and open-source Pascal compiler that can target many processor architectures, with DOS version available.
 
 * <span style="font-weight: 600">Want to run network applications?</span> [mTCP](http://www.brutman.com/mTCP/) is a set of TCP/IP applications for DOS and include applications like DHCP, FTP, FTPSRV, HTGET, and other networking tools.
 
