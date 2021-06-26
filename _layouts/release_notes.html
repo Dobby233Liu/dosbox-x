@@ -1,0 +1,83 @@
+---
+title: DOSBox-X {{ page.version }} Release Notes
+---
+
+<!-- REQUIRED in page namespace: version date -->
+
+<!-- hacky nav -->
+{% assign cur_position = -1 %}
+{% assign show_last = false %}
+{% assign last = "" %}
+{% assign show_next = false %}
+{% assign next = "" %}
+{% for version in site.data.version_lst.versions %}
+  {% if version == page.version %}
+    {% assign cur_position = forloop.index0 %}
+    {% break %} 
+  {% endif %}
+  Somebody please update _data/version_lst.yml
+{% endfor %}
+{% if cur_position != -1 %}
+  {% assign total = site.data.version_lst.size - 1 %}
+  {% if cur_position < 1 %}
+    {% assign show_last = false %}
+  {% endif %}
+  {% if cur_position >= total %}
+    {% assign show_next = false %}
+  {% endif %}
+  {% if show_last == true %}
+    {% assign last = site.data.version_lst[cur_position - 1] %}
+  {% endif %}
+  {% if show_next == true %}
+    {% assign next = site.data.version_lst[cur_position + 1] %}
+  {% endif %}
+{% endif %}
+
+<div style="text-align: center">
+    <h3 style="padding-top: 10px">DOSBox-X {{ page.version }} Release Notes</h3>
+    <h4 style="padding-bottom: 15px; font-weight: normal">Release Date: <span style="color: green">{{ page.date }}</span></h4>
+    <p>
+      {% if site.data.version_lst.latest.version != page.version %}
+      It is strongly recommended to use the latest version instead:
+      <a href="release-{{ site.data.version_lst.latest.version }}.html">DOSBox-X {{ site.data.version_lst.latest.version }} Release Notes</a> 
+      {% else %}
+      Please report any issues in our <a href="https://github.com/joncampbell123/dosbox-x/issues">issue tracker</a>.
+      {% endif %}
+    </p>
+    <p>Also, make sure to check out our <a href="wiki">wiki</a>.</p>
+    <h4>New in This Version</h4>
+
+    <table width="100%" style="border: hidden">
+      <tr>
+      <td width="20%" style="border: hidden"></td>
+      <td width="60%" style="border: hidden; text-align: left">
+        {{ content }}
+      </td>
+      <td></td>
+      </tr>
+
+      <tr>
+        <td></td>
+        <td style="border: hidden">
+          <table width="100%" style="text-align: center; font-weight: bold">
+            <tr>
+              <td width="50%">
+                Previous release: 0.83.13 (<a href="release-0.83.13.html">release notes</a>)
+              </td>
+              <td width="50%">
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td style="border: hidden"></td>
+        </tr>
+      
+      <tr>
+        <td style="border: hidden"></td>
+        <td style="border: hidden">
+          <center>Return to <a href="release-notes">release notes index</a></center>
+        </td>
+        <td style="border: hidden"></td>
+      </tr>
+    </table>
+</div>
