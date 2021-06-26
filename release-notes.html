@@ -1,10 +1,11 @@
 ---
-name: Index of Release Notes
+title: Index of Release Notes
 layout: sub
+permalink: release-notes
 ---
 
 <ul>
 {% for version in site.data.version_lst.versions %}
-  <li><a href="{{ 'release-{{ item.url }}.html' | relative_url }}">DOSBox-X {{ version }} Release Notes</a></li>
+  <li><a href="release-{{ version }}.html">DOSBox-X {{ version }} Release Notes</a></li>
 {% endfor %}
 </ul>
