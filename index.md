@@ -1,81 +1,79 @@
 ---
-title: DOSBox-X - Complete DOS emulation package
-layout: default
+title: "DOSBox-X - Complete DOS emulation package"
+layout: sub_index
 ---
 
-<table width="100%" style="border: hidden">
-      <tr>
-      <!-- Latest version column is in _includes/version.html to make it easy to maintain -->
-      {% include version.html %}
-      <td width="80%">
-        <p><span style="font-weight: bold">DOSBox-X</span> is an open-source DOS emulator for running DOS games and applications.</p>
-        
-        <p>
-        DOSBox-X emulates a PC necessary for running many DOS games and applications that simply cannot be run on modern PCs and operating systems, similar to <a href="http://dosbox.com" target="_blank">DOSBox</a>.
-        However, while the main focus of DOSBox is for running DOS games, DOSBox-X goes much further than this.
-        </p><p>
-        Started as a fork of the DOSBox project, it retains compatibility with the wide base of DOS games and DOS gaming DOSBox was designed for.
-        But it is also a platform for running DOS applications, including emulating the environments to run Windows 3.x, 9x and ME and software written for those versions of Windows.
-        Moreover, DOSBox-X adds support for NEC PC-98 emulations so that you can play PC-98 games with it.
-        By adding support for Windows 95, 98, and ME emulation and acceleration, we hope that those old Windows games and applications could be enjoyed or used once more.
-        </p><p>
-        Compared to DOSBox, DOSBox-X is much more flexible and provides more features. A few examples of DOSBox-X's unique features are available in the <a href="https://dosbox-x.com/wiki/DOSBox%E2%80%90X%E2%80%99s-Feature-Highlights" target="_blank">DOSBox-X's Feature Highlights</a> page.
-        It is our hope to cover all features needed by DOS programs and games (and DOS-based Windows), including, 
-        among many others, printing, networking, file/record-locking, clipboard, multimedia, 3dfx Voodoo & Glide, disk controller and IDE emulation, debugging features, etc, which are already supported;
-        in some applications the software may also work in combination with 3rd-party solutions like <a href="https://www.printfil.com/">Printfil</a> or <a href="http://sourceforge.net/projects/winprint/">WinPrint</a> on Windows host systems for even smoother experiences.
-        </p><p>
-        Our goal is to eventually make DOSBox-X a <span style="font-weight: bold">complete DOS emulation package</span> that is both fully-featured and easy to use.
-        We implement new features with each official release, and try our best to make them work in a cross-platform manner. At the same time, we are making efforts to improve emulation quality and usability for end users who want to run DOS programs or games.
-        In order to help improve the general DOS emulation and also to help continued DOS developments, it is our desire to implement <span style="font-weight: bold">accurate emulation</span>, accurate enough to <a href="newdosdevelopment.html" style="font-weight: bold">help make new DOS developments possible</a> with confidence the program will run properly on actual DOS 
-        DOSBox-X features a flexible configuration, as we believe a better way to emulate the DOS platform is to give users all the options to configure the DOS virtual machine, including everything from original IBM PC system all the way up to late 1990’s configuration, whatever it takes to get your DOS program or game to run.
-        </p>
+<!-- Latest version column is in _includes/version.html to make it easy to maintain -->
+{% include version.html %}
+
+<td width="80%">
+
+<p><span style="font-weight: bold">DOSBox-X</span> is an open-source DOS emulator for running DOS games and applications.</p>
+<p>
+DOSBox-X emulates a PC necessary for running many DOS games and applications that simply cannot be run on modern PCs and operating systems, similar to <a href="http://dosbox.com" target="_blank">DOSBox</a>.
+However, while the main focus of DOSBox is for running DOS games, DOSBox-X goes much further than this.
+</p><p>
+Started as a fork of the DOSBox project, it retains compatibility with the wide base of DOS games and DOS gaming DOSBox was designed for.
+But it is also a platform for running DOS applications, including emulating the environments to run Windows 3.x, 9x and ME and software written for those versions of Windows.
+Moreover, DOSBox-X adds support for NEC PC-98 emulations so that you can play PC-98 games with it.
+By adding support for Windows 95, 98, and ME emulation and acceleration, we hope that those old Windows games and applications could be enjoyed or used once more.
+</p><p>
+Compared to DOSBox, DOSBox-X is much more flexible and provides more features. A few examples of DOSBox-X's unique features are available in the <a href="https://dosbox-x.com/wiki/DOSBox%E2%80%90X%E2%80%99s-Feature-Highlights" target="_blank">DOSBox-X's Feature Highlights</a> page.
+It is our hope to cover all features needed by DOS programs and games (and DOS-based Windows), including, 
+among many others, printing, networking, file/record-locking, clipboard, multimedia, 3dfx Voodoo & Glide, disk controller and IDE emulation, debugging features, etc, which are already supported;
+in some applications the software may also work in combination with 3rd-party solutions like <a href="https://www.printfil.com/">Printfil</a> or <a href="http://sourceforge.net/projects/winprint/">WinPrint</a> on Windows host systems for even smoother experiences.
+</p><p>
+Our goal is to eventually make DOSBox-X a <span style="font-weight: bold">complete DOS emulation package</span> that is both fully-featured and easy to use.
+We implement new features with each official release, and try our best to make them work in a cross-platform manner. At the same time, we are making efforts to improve emulation quality and usability for end users who want to run DOS programs or games.
+In order to help improve the general DOS emulation and also to help continued DOS developments, it is our desire to implement <span style="font-weight: bold">accurate emulation</span>, accurate enough to <a href="newdosdevelopment.html" style="font-weight: bold">help make new DOS developments possible</a> with confidence the program will run properly on actual DOS 
+DOSBox-X features a flexible configuration, as we believe a better way to emulate the DOS platform is to give users all the options to configure the DOS virtual machine, including everything from original IBM PC system all the way up to late 1990’s configuration, whatever it takes to get your DOS program or game to run.
+</p>
             
-        <hr style="border-bottom: 1px solid #8c8b8b" /><br />
+<hr style="border-bottom: 1px solid #8c8b8b" /><br />
         
-        <p>Below are some screenshots of DOS programs and games running in DOSBox-X.</p>
-        
-        <table style="width: 100%">
-            <tr><center>
-                <td width="33%"><center>
-                <a href="images/msword.png">
-                <img alt="Word for DOS running in DOSBox-X" longdesc="Word for DOS running in DOSBox-X" src="images/msword.png" width="90%" xthumbnail-orig-image="images/msword.png">
-                </a>
-                </center></td>
-                <td width="33%"><center>
-                <a href="images/tomb3d.png">
-                <img alt="Tomb Raider 3dfx running in DOSBox-X" longdesc="Tomb Raider 3dfx running in DOSBox-X" src="images/tomb3d.png"  width="90%" xthumbnail-orig-image="images/tomb3d.png">
-                </a>
-                </center></td>
-                <td width="33%"><center>
-                <a href="images/win98guest.png">
-                <img alt="Windows 98 guest running in DOSBox-X" longdesc="Windows 98 guest running in DOSBox-X" src="images/win98guest.png" width="90%" xthumbnail-orig-image="images/win98guest.png">
-                </a>
-                </center></td>
-            </tr>
-            <tr>
-                <td><center style="font-weight: bold">Word for DOS running in DOSBox-X</center></td>
-                <td><center style="font-weight: bold">Tomb Raider 3dfx running in DOSBox-X</center></td>
-                <td><center style="font-weight: bold">Windows 98 guest running in DOSBox-X</center></td>
-            </tr>
-        </table>  
+<p>Below are some screenshots of DOS programs and games running in DOSBox-X.</p>
 
-          <p>DOSBox-X have a <a href="wiki" target="_blank">wiki</a> (see also <a href="wiki/guides" target="_blank">guide page list</a>) which explains how to set up DOSBox-X and configure different types of DOS software to run in DOSBox-X. Also, as DOSBox-X is an open-source project, we <span style="font-weight: bold">strongly encourage users or developers to contribute to DOSBox-X</span> in order to make it work even better as a complete DOS emulation package. Please visit <a href="https://github.com/joncampbell123/dosbox-x" target="_blank">our project website on GitHub</a> for more information. <span style="font-weight: bold">Feel free to leave comments or feedbacks</span> as we would like to hear from you, and we always welcome and encourage you to join the DOSBox-X Team.</p>
+<!-- Can't use Markdown tables for styling -->
+<table style="width: 100%">
+<tr><center>
+<td width="33%"><center>
+<a href="images/msword.png">
+<img alt="Word for DOS running in DOSBox-X" longdesc="Word for DOS running in DOSBox-X" src="images/msword.png" width="90%" xthumbnail-orig-image="images/msword.png">
+</a>
+</center></td>
+<td width="33%"><center>
+<a href="images/tomb3d.png">
+<img alt="Tomb Raider 3dfx running in DOSBox-X" longdesc="Tomb Raider 3dfx running in DOSBox-X" src="images/tomb3d.png"  width="90%" xthumbnail-orig-image="images/tomb3d.png">
+</a>
+</center></td>
+<td width="33%"><center>
+<a href="images/win98guest.png">
+<img alt="Windows 98 guest running in DOSBox-X" longdesc="Windows 98 guest running in DOSBox-X" src="images/win98guest.png" width="90%" xthumbnail-orig-image="images/win98guest.png">
+</a>
+</center></td>
+</tr>
+<tr>
+<td><center style="font-weight: bold">Word for DOS running in DOSBox-X</center></td>
+<td><center style="font-weight: bold">Tomb Raider 3dfx running in DOSBox-X</center></td>
+<td><center style="font-weight: bold">Windows 98 guest running in DOSBox-X</center></td>
+</tr>
+</table>  
 
-            <table style="border: hidden">
-            <tr>
-                  <td id="prespace">
-                  </td>
-                  <td style="border: hidden">
-                  <a id="linkwiki" href="wiki" target="_blank">View Wiki Guide</a>
-                  </td>
-                  <td style="border: hidden">
-                  <a id="linktracker" href="https://github.com/joncampbell123/dosbox-x/issues" target="_blank">View Issue Tracker</a>
-                  </td>
-                  <td style="border: hidden">
-                  <a id="linkproject" href="https://github.com/joncampbell123/dosbox-x" target="_blank">View Project on GitHub</a>
-                  </td>
-            </tr>
-            </table>
-          </td>
-         </tr>
+<p>DOSBox-X have a <a href="wiki" target="_blank">wiki</a> (see also <a href="wiki/guides" target="_blank">guide page list</a>) which explains how to set up DOSBox-X and configure different types of DOS software to run in DOSBox-X. Also, as DOSBox-X is an open-source project, we <span style="font-weight: bold">strongly encourage users or developers to contribute to DOSBox-X</span> in order to make it work even better as a complete DOS emulation package. Please visit <a href="https://github.com/joncampbell123/dosbox-x" target="_blank">our project website on GitHub</a> for more information. <span style="font-weight: bold">Feel free to leave comments or feedbacks</span> as we would like to hear from you, and we always welcome and encourage you to join the DOSBox-X Team.</p>
+
+<table style="border: hidden">
+<tr>
+<td id="prespace"></td>
+<td style="border: hidden">
+<a id="linkwiki" href="wiki" target="_blank">View Wiki Guide</a>
+</td>
+<td style="border: hidden">
+<a id="linktracker" href="https://github.com/joncampbell123/dosbox-x/issues" target="_blank">View Issue Tracker</a>
+</td>
+<td style="border: hidden">
+<a id="linkproject" href="https://github.com/joncampbell123/dosbox-x" target="_blank">View Project on GitHub</a>
+</td>
+</tr>
 </table>
+
+</td>
