@@ -6,35 +6,35 @@ on:
   release:
     types: [published]
 
-# TODO NTS plan currectly is:
+# TODO NTS
+# the plan currectly is:
 #   [x86_64]  [arm64]  [universal]
 #       \       |       /
 #        \      |      /
 #         [build bundle]
 #               |
 #         [tar & upload]
-#      (maybe create a dmg)
+#     (maybe create a dmg too)
 # xref: https://developer.apple.com/documentation/apple-silicon/building-a-universal-macos-binary
 #       https://github.com/dosbox-staging/dosbox-staging/blob/master/.github/workflows/macos.yml
-#       https://github.com/create-dmg/create-dmg (brew install create-dmg)
-#       old versions of this file
-# remember to touch other workflows
 
 jobs:
 
   build:
     name: Build
-    
     # TODO: get to use 11 so we can ACTUALLY compile for arm64
     # https://github.com/actions/virtual-environments/blob/main/docs/macos-11-onboarding.md
     runs-on: macos-latest
+    
     strategy:
       matrix:
         variant: ["", "-sdl2"]
-        arch: [x86_64] #, arm64, universal] FIXME: arm64 cross-compilation is hard
+        # FIXME: cross-compilation is hard
+        arch: [x86_64] #, arm64, universal]
+        
     steps:
       - name: Hax before 11
-        if: false # true when can arm64
+        if: false # FIXME
         run: |
           # Hack macOS 10.x to allow arm64* build support
           if [ "$(sw_vers -productVersion | cut -d'.' -f1)" = 10 ]; then
@@ -60,10 +60,11 @@ jobs:
           mv -f "$BREW_DIR"/* "$DISCARD_DIR"
           echo "::set-output name=brew_dir::$BREW_DIR"
           echo "::set-output name=today::$(date +%F)"
-      - uses:  actions/cache@v2
+      - uses: actions/cache@v2
+        name: Brew cache
         with:
           path: ${{ steps.prep-caches.outputs.brew_dir }}
-          key:  brew-cache-${{ steps.prep-caches.outputs.today }}-${{ matrix.variant }}${{ matrix.arch }}
+          key: brew-cache-${{ steps.prep-caches.outputs.today }}-${{ matrix.variant }}${{ matrix.arch }}
           restore-keys: brew-cache--
       # NTS: AS might be supported
       - name: Install dependencies
@@ -111,8 +112,6 @@ jobs:
           ./build-macosx$RUN_NSUFF CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" --host=aarch64-apple-darwin
           cp src/dosbox-x src/dosbox-x-2
           lipo -create -output src/dosbox-x src/dosbox-x-1 src/dosbox-x-2
-      - name: Check if arch correct [DEBUG]
-        run: file -b src/dosbox-x
           
       # also tar it to keep permissions
       - name: Make app bundle
