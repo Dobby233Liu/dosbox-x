@@ -281,7 +281,7 @@ jobs:
           
       - name: Pack zip
         run: |
-          $hxdir="build-scripts/mingw/hxdos"
+          hxdir="build-scripts/mingw/hxdos"
           strip src/dosbox-x.exe
           cp src/dosbox-x.exe $hxdir/dosbox-x.exe
           $hxdir/pestub.exe -n $hxdir/dosbox-x.exe
