@@ -3,12 +3,12 @@ title: DOSBox-X - Complete DOS emulation package
 layout: default
 ---
 
-      <table width="100%" style="border: hidden">
+<table width="100%" style="border: hidden">
       <tr>
       <!-- Latest version column is in _includes/version.html to make it easy to maintain -->
       {% include version.html %}
       <td width="80%">
-        <p><span style="font-weight: bold">DOSBox-X</span> is an open-source DOS emulator for running DOS games and applications.</p><br />
+        <p><span style="font-weight: bold">DOSBox-X</span> is an open-source DOS emulator for running DOS games and applications.</p>
         
         <p>
         DOSBox-X emulates a PC necessary for running many DOS games and applications that simply cannot be run on modern PCs and operating systems, similar to <a href="http://dosbox.com" target="_blank">DOSBox</a>.
@@ -30,21 +30,27 @@ layout: default
         DOSBox-X features a flexible configuration, as we believe a better way to emulate the DOS platform is to give users all the options to configure the DOS virtual machine, including everything from original IBM PC system all the way up to late 1990’s configuration, whatever it takes to get your DOS program or game to run.
         </p>
             
-        <br /><hr style="border-bottom: 1px solid #8c8b8b" /><br />
+        <hr style="border-bottom: 1px solid #8c8b8b" /><br />
         
         <p>Below are some screenshots of DOS programs and games running in DOSBox-X.</p>
         
         <table style="width: 100%">
             <tr><center>
                 <td width="33%"><center>
-        <a href="images/msword.png">
-                <img alt="Word for DOS running in DOSBox-X" longdesc="Word for DOS running in DOSBox-X" src="images/msword.png" width="90%" xthumbnail-orig-image="images/msword.png"></a></center></td>
+                <a href="images/msword.png">
+                <img alt="Word for DOS running in DOSBox-X" longdesc="Word for DOS running in DOSBox-X" src="images/msword.png" width="90%" xthumbnail-orig-image="images/msword.png">
+                </a>
+                </center></td>
                 <td width="33%"><center>
-        <a href="images/tomb3d.png">
-                <img alt="Tomb Raider 3dfx running in DOSBox-X" longdesc="Tomb Raider 3dfx running in DOSBox-X" src="images/tomb3d.png"  width="90%" xthumbnail-orig-image="images/tomb3d.png"></a></center></td>
+                <a href="images/tomb3d.png">
+                <img alt="Tomb Raider 3dfx running in DOSBox-X" longdesc="Tomb Raider 3dfx running in DOSBox-X" src="images/tomb3d.png"  width="90%" xthumbnail-orig-image="images/tomb3d.png">
+                </a>
+                </center></td>
                 <td width="33%"><center>
-        <a href="images/win98guest.png">
-                <img alt="Windows 98 guest running in DOSBox-X" longdesc="Windows 98 guest running in DOSBox-X" src="images/win98guest.png" width="90%" xthumbnail-orig-image="images/win98guest.png"></a></center></td>
+                <a href="images/win98guest.png">
+                <img alt="Windows 98 guest running in DOSBox-X" longdesc="Windows 98 guest running in DOSBox-X" src="images/win98guest.png" width="90%" xthumbnail-orig-image="images/win98guest.png">
+                </a>
+                </center></td>
             </tr>
             <tr>
                 <td><center style="font-weight: bold">Word for DOS running in DOSBox-X</center></td>
@@ -57,16 +63,19 @@ layout: default
 
             <table style="border: hidden">
             <tr>
-            <td id="prespace">
-            </td><td style="border: hidden">
-            <a id="linkwiki" href="wiki" target="_blank">View Wiki Guide</a>
-            </td><td style="border: hidden">
-            <a id="linktracker" href="https://github.com/joncampbell123/dosbox-x/issues" target="_blank">View Issue Tracker</a>
-            </td><td style="border: hidden">
-            <a id="linkproject" href="https://github.com/joncampbell123/dosbox-x" target="_blank">View Project on GitHub</a>
-            </td>
+                  <td id="prespace">
+                  </td>
+                  <td style="border: hidden">
+                  <a id="linkwiki" href="wiki" target="_blank">View Wiki Guide</a>
+                  </td>
+                  <td style="border: hidden">
+                  <a id="linktracker" href="https://github.com/joncampbell123/dosbox-x/issues" target="_blank">View Issue Tracker</a>
+                  </td>
+                  <td style="border: hidden">
+                  <a id="linkproject" href="https://github.com/joncampbell123/dosbox-x" target="_blank">View Project on GitHub</a>
+                  </td>
             </tr>
             </table>
           </td>
          </tr>
-        </table>
+</table>
