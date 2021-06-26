@@ -254,7 +254,7 @@ jobs:
       - name: Install toolchain
         shell: cmd
         working-directory: C:\MinGW
-        run: mingw-get install gcc g++ binutils zlib
+        run: mingw-get install gcc g++ binutils mingw32-zlib mingw32-libz
       - uses: msys2/setup-msys2@v2
         name: Setup MSYS2
         with:
