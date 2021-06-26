@@ -29,7 +29,7 @@ In order to help improve the general DOS emulation and also to help continued DO
 DOSBox-X features a flexible configuration, as we believe a better way to emulate the DOS platform is to give users all the options to configure the DOS virtual machine, including everything from original IBM PC system all the way up to late 1990’s configuration, whatever it takes to get your DOS program or game to run.
 </p>
             
-<hr style="border-bottom: 1px solid #8c8b8b" /><br />
+<hr style="border-bottom: 1px solid #8c8b8b" />
         
 <p>Below are some screenshots of DOS programs and games running in DOSBox-X.</p>
 
