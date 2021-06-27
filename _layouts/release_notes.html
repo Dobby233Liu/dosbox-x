@@ -11,29 +11,21 @@ hacky nav code
 {% for version in site.data.version_lst.versions %}
   {% if version == page.version %}
     {% assign cur_position = forloop.index0 %}
-    FOUND pos {{ cur_position }}<br />
     {% break %} 
   {% endif %}
 {% endfor %}
 {% if cur_position != -1 %}
-  {% assign total = site.data.version_lst.size %}
-  {% assign total = decrement total %}
-  {{ total }}<br />
+  {% assign total = site.data.version_lst.versions.size - 1 %}
   {% unless cur_position < 1 %}
     {% assign show_last = true %}
-    {% assign cur_position = decrement cur_position %}
-    {% assign last = site.data.version_lst[cur_position] %}
-    {% assign cur_position = increment cur_position %}
-    FOUND last {{ last }}<br />
+    {% assign last = site.data.version_lst.versions[cur_position - 1] %}
   {% else %}
     {% assign show_last = false %}
   {% endunless %}                     
   {% unless cur_position >= total %}
     {% assign show_next = true %}
     {% assign cur_position = increment cur_position %}
-    {% assign next = site.data.version_lst[cur_position] %}
-    {% assign cur_position = decrement cur_position %}
-    FOUND next {{ next }}<br />
+    {% assign next = site.data.version_lst.versions[cur_position + 1] %}
   {% else %}
     {% assign show_next = false %}
   {% endunless %}
