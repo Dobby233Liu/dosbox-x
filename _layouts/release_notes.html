@@ -15,7 +15,8 @@ hacky nav
   {% endif %}
 {% endfor %}
 {% if cur_position != -1 %}
-  {% assign total = site.data.version_lst.size - 1 %}
+  {% assign total = site.data.version_lst.size %}
+  {% decrement total %}
   {% unless cur_position < 1 %}
     {% assign show_last = true %}
   {% else %}
@@ -27,11 +28,15 @@ hacky nav
     {% assign show_next = false %}
   {% endunless %}
   {% if show_last == true %}
-    {% assign last = site.data.version_lst[cur_position - 1] %}
+    {% decrement cur_position %}
+    {% assign last = site.data.version_lst[cur_position] %}
   {% endif %}
+  {% increment cur_position %}
   {% if show_next == true %}
+    {% increment cur_position %}
     {% assign next = site.data.version_lst[cur_position + 1] %}
   {% endif %}
+  {% decrement cur_position %}
 {% else %}
 {% assign show_last = false %}
 {% assign last = "" %}
