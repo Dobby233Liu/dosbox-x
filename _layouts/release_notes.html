@@ -3,37 +3,7 @@ title: DOSBox-X {{ page.version }} Release Notes
 layout: default
 ---
 
-{% comment %}
-REQUIRED in page namespace: version date
-hacky nav code
-{% endcomment %}
-{% assign cur_position = -1 %}
-{% for version in site.data.version_lst.versions %}
-  {% if version == page.version %}
-    {% assign cur_position = forloop.index0 %}
-    {% break %} 
-  {% endif %}
-{% endfor %}
-{% assign show_last = false %}
-{% assign last = "" %}
-{% assign show_next = false %}
-{% assign next = "" %}
-{% if cur_position != -1 %}
-  {% assign total = site.data.version_lst.versions.size | minus: 1 %}
-  {% unless cur_position < 1 %}
-    {% assign show_last = true %}
-    {% assign wtf = cur_position | minus: 1 %}
-    {% assign last = site.data.version_lst.versions[wtf] %}
-  {% endunless %}                     
-  {% unless cur_position >= total %}
-    {% assign show_next = true %}
-    {% assign wtf = cur_position | plus: 1 %}
-    {% assign next = site.data.version_lst.versions[wtf] %}
-  {% endunless %}
-{% else %}
-  The entry for this version is not found. Please tell the admin.
-{% endif %}
-
+{% include nav.liquid %}
 <div style="text-align: center">
     <h3 style="padding-top: 10px">DOSBox-X {{ page.version }} Release Notes</h3>
     <h4 style="padding-bottom: 15px; font-weight: normal">Release Date: <span style="color: green">{{ page.date }}</span></h4>
