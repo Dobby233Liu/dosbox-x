@@ -4,6 +4,7 @@ hacky nav code
 included in _layouts/release_notes.html
 public domain
 {% endcomment %}
+
 {% assign cur_position = -1 %}
 {% for version in site.data.version_lst.versions %}
   {% if version == page.version %}
@@ -11,6 +12,7 @@ public domain
     {% break %} 
   {% endif %}
 {% endfor %}
+
 {% assign show_last = false %}
 {% assign last = "" %}
 {% assign show_next = false %}
@@ -26,7 +28,8 @@ public domain
     {% assign show_next = true %}
     {% assign wtf = cur_position | plus: 1 %}
     {% assign next = site.data.version_lst.versions[wtf] %}
+    next???
   {% endunless %}
 {% else %}
-  The entry for this version is not found. Please tell the admin.
+  nav.liquid: The entry for this version is not found. Please tell the admin to edit _data/version_lst.yml.
 {% endif %}
