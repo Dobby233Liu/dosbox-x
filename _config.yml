@@ -5,7 +5,11 @@
 
 # Name of site shown in header
 name: DOSBox-X
+# Site tagline in the header
+# NTS: This should be description in vanila Slate, but who cares.
 tagline: "Cross-platform DOS emulation package<br />Complete, accurate emulation and more"
+# The theme is heavily edited, so this is not relevant anymore
+# theme: jekyll-theme-slate
 
 # Title for pages without a custom title
 # The default preference is:
@@ -14,5 +18,29 @@ title: "DOSBox-X - Complete DOS emulation package"
 # SEO meta tags
 seo:
   description: "DOSBox-X: Free, cross-platform and complete DOS, Windows 3.x and 9x emulation package"
+
+# TIP: These are only the basic things.
+# More Jekyll stuff can be seen on https://jekyllrb.org
+# If you want to test offline, use jekyll serve
+# (install Jekyll CLI first)
+# To add a version on this site (can't figure out where to put this, anyway):
+# 1. Change _data/version_lst.yml - add a entry to versions array,
+# (remember that the version array must in the order of older->newer)
+# change parameters in latest if added version is latest.
+# Also change last to a older version than the version you're adding (nothing if none)
+# if you're adding the version specified in last. (last is a placeholder string)
+# The added version will show up in /release-notes.
+# 2. Copy the latest release notes file as a template for your new one,
+# and rename it to release-{new version string}.html.
+# Change the front matter if needed. Then write the relnote out.
+# Link for added version in /release-notes should not 404;
+# If added is latest, /release-notes will show it and relnote page
+# won't suggest latest or display a error.
+# If not, refresh and refresh or try again.
+# 3. Finally, edit the link sidebar: _includes/version.html if added is latest
+# 4 JON: update the compat report files (optional)
+# 5. do doxygen once (optional)
+# 6. touch wiki (optional)
+# This template will do the rest
 
 ### End site params ###
