@@ -5,44 +5,44 @@ layout: default
 
 {% comment %}
 REQUIRED in page namespace: version date
-hacky nav
+hacky nav code
 {% endcomment %}
 {% assign cur_position = -1 %}
 {% for version in site.data.version_lst.versions %}
   {% if version == page.version %}
     {% assign cur_position = forloop.index0 %}
+    FOUND pos {{ cur_position }}
     {% break %} 
   {% endif %}
 {% endfor %}
 {% if cur_position != -1 %}
   {% assign total = site.data.version_lst.size %}
   {% decrement total %}
+  {{ total }}
   {% unless cur_position < 1 %}
     {% assign show_last = true %}
+    {% decrement cur_position %}
+    {% assign last = site.data.version_lst[cur_position] %}
+    {% increment cur_position %}
+    FOUND last
   {% else %}
     {% assign show_last = false %}
-  {% endunless %}
+  {% endunless %}                     
   {% unless cur_position >= total %}
     {% assign show_next = true %}
+    {% increment cur_position %}
+    {% assign next = site.data.version_lst[cur_position + 1] %}
+    {% decrement cur_position %}
+    FOUND next
   {% else %}
     {% assign show_next = false %}
   {% endunless %}
-  {% if show_last == true %}
-    {% decrement cur_position %}
-    {% assign last = site.data.version_lst[cur_position] %}
-  {% endif %}
-  {% increment cur_position %}
-  {% if show_next == true %}
-    {% increment cur_position %}
-    {% assign next = site.data.version_lst[cur_position + 1] %}
-  {% endif %}
-  {% decrement cur_position %}
 {% else %}
-{% assign show_last = false %}
-{% assign last = "" %}
-{% assign show_next = false %}
-{% assign next = "" %}
-The entry for this version is not found. Tell the admin.
+  {% assign show_last = false %}
+  {% assign last = "" %}
+  {% assign show_next = false %}
+  {% assign next = "" %}
+  The entry for this version is not found. Please tell the admin.
 {% endif %}
 
 <div style="text-align: center">
