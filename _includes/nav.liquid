@@ -28,7 +28,6 @@ public domain
     {% assign show_next = true %}
     {% assign wtf = cur_position | plus: 1 %}
     {% assign next = site.data.version_lst.versions[wtf] %}
-    next???
   {% endunless %}
 {% else %}
   nav.liquid: The entry for this version is not found. Please tell the admin to edit _data/version_lst.yml.
