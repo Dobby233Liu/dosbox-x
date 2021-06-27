@@ -8,8 +8,9 @@
 
     <!-- FIXME: Handle relative urls thru basepath. noisynotepad is a good ref -->
     <link rel="stylesheet" type="text/css" media="screen" href="css/style.css">
+    {%- unless page.override_title or layout.override_title -%}
     
-    <title>{{ page.title }}</title>
+    <title>{{ page.title }}</title>{%- endunless -%}
   </head>
 
   <body>
