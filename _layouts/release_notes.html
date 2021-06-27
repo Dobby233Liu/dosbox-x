@@ -20,14 +20,15 @@ hacky nav code
 {% assign next = "" %}
 {% if cur_position != -1 %}
   {% assign total = site.data.version_lst.versions.size - 1 %}
-  {{ site.data.version_lst.versions[0] }}
   {% unless cur_position < 1 %}
     {% assign show_last = true %}
-    {% capture last %}{{ site.data.version_lst.versions[cur_position - 1] }}{% endcapture %}
+    {% assign wtf = cur_position - 1 %}
+    {% assign last = site.data.version_lst.versions[wtf] %}
   {% endunless %}                     
   {% unless cur_position >= total %}
     {% assign show_next = true %}
-    {% capture next %}{{ site.data.version_lst.versions[cur_position + 1] }}{% endcapture %}
+    {% assign wtf = cur_position + 1 %}
+    {% assign next = site.data.version_lst.versions[wtf] %}
   {% endunless %}
 {% else %}
   The entry for this version is not found. Please tell the admin.
@@ -62,24 +63,16 @@ hacky nav code
           <table width="100%" style="text-align: center; font-weight: bold">
             <tr>
               <td width="50%">
-                Previous release:
-                {% if show_last == true %}
-                <a href="release-{{ last }}.html">{{ last }}</a>
-                {% else %}
-                {{ site.data.version_lst.last }}
-                {% endif %}
+                Previous release: {% if show_last == true %}<a href="release-{{ last }}.html">{{ last }}</a>{% else %}{{ site.data.version_lst.last }}{% endif %}
               </td>
               <td width="50%">
-                Next release:
-                {% if show_next == true %}
-                <a href="release-{{ next }}.html">{{ next }}</a>
-                {% endif %}
+                Next release: {% if show_next == true %}<a href="release-{{ next }}.html">{{ next }}</a>{% endif %}
               </td>
             </tr>
           </table>
         </td>
         <td style="border: hidden"></td>
-        </tr>
+      </tr>
       
       <tr>
         <td style="border: hidden"></td>
