@@ -8,14 +8,9 @@ layout: default
 <div style="text-align: center">
     <h3 style="padding-top: 10px">DOSBox-X {{ page.version }} Release Notes</h3>
     <h4 style="padding-bottom: 15px; font-weight: normal">Release Date: <span style="color: green">{{ page.date }}</span></h4>
-    <p>
-      {% if site.data.version_lst.latest.version != page.version %}
-      It is strongly recommended to use the latest version instead:
-      <a href="release-{{ site.data.version_lst.latest.version }}.html">DOSBox-X {{ site.data.version_lst.latest.version }} Release Notes</a> 
-      {% else %}
-      Please report any issues in our <a href="https://github.com/joncampbell123/dosbox-x/issues">issue tracker</a>.
-      {% endif %}
-    </p>
+    {-% if site.data.version_lst.latest.version != page.version %-}
+    <p>Please report any issues in our <a href="https://github.com/joncampbell123/dosbox-x/issues">issue tracker</a>.</p>
+    {-% endif %-}
     <p>Also, make sure to check out our <a href="wiki">wiki</a>.</p>
     <h4>New in This Version</h4>
 
@@ -34,10 +29,10 @@ layout: default
           <table width="100%" style="text-align: center; font-weight: bold">
             <tr>
               <td width="50%">
-                Previous release: {% if show_last == true %}<a href="release-{{ last }}.html">{{ last }}</a>{% else %}{{ site.data.version_lst.last }}{% endif %}
+                Previous release: {% if show_last == true %}{{ last }} <a href="release-{{ last }}.html">(release notes)</a>{% else %}{{ site.data.version_lst.last }}{% endif %}
               </td>
               <td width="50%">
-                Next release: {% if show_next == true %}<a href="release-{{ next }}.html">{{ next }}</a>{% else %}{{ page.version }}{% endif %}
+                Next release: {% if show_next == true %}{{ next }} <a href="release-{{ next }}.html">(release notes)</a>{% else %}{{ page.version }} (release notes){% endif %}
               </td>
             </tr>
           </table>
