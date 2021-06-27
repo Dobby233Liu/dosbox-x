@@ -3,6 +3,10 @@
 
 ### Site parameters ###
 
+# Name of site shown in header
+name: DOSBox-X
+tagline: "Cross-platform DOS emulation package<br />Complete, accurate emulation and more"
+
 # Title for pages without a custom title
 # The default preference is:
 # Page title -> layout title -> global title
