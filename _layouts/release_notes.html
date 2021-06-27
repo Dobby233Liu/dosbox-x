@@ -7,13 +7,13 @@ layout: default
 REQUIRED in page namespace: version date
 hacky nav
 {% endcomment %}
+{% assign cur_position = -1 %}
 {% for version in site.data.version_lst.versions %}
   {% if version == page.version %}
     {% assign cur_position = forloop.index0 %}
     {% break %} 
   {% endif %}
 {% endfor %}
-{% assign cur_position = -1 %}
 {% if cur_position != -1 %}
   {% assign total = site.data.version_lst.size - 1 %}
   {% unless cur_position < 1 %}
