@@ -17,7 +17,6 @@ hacky nav
     {% assign cur_position = forloop.index0 %}
     {% break %} 
   {% endif %}
-  Somebody please update _data/version_lst.yml
 {% endfor %}
 {% if cur_position != -1 %}
   {% assign total = site.data.version_lst.size - 1 %}
@@ -29,10 +28,14 @@ hacky nav
   {% endunless %}
   {% if show_last == true %}
     {% assign last = site.data.version_lst[cur_position - 1] %}
+    {% echo last %}
   {% endif %}
   {% if show_next == true %}
     {% assign next = site.data.version_lst[cur_position + 1] %}
+    {% echo next %}
   {% endif %}
+{% else %}
+Big Fail
 {% endif %}
 
 <div style="text-align: center">
