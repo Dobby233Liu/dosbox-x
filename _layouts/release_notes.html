@@ -15,19 +15,18 @@ hacky nav code
   {% endif %}
 {% endfor %}
 {% if cur_position != -1 %}
-  {% assign total = site.data.version_lst.versions.size - 1 %}
+  {% assign total = site.data.version_lst.versions.size - 1 %}%}
+  {% assign show_last = false %}
+  {% assign last = "" %}
+  {% assign show_next = false %}
+  {% assign next = "" %}
   {% unless cur_position < 1 %}
     {% assign show_last = true %}
-    {% assign last = site.data.version_lst.versions[cur_position - 1] %}
-  {% else %}
-    {% assign show_last = false %}
+    {% capture last %}{{ site.data.version_lst.versions[cur_position - 1] }}{% endcapture %}
   {% endunless %}                     
   {% unless cur_position >= total %}
     {% assign show_next = true %}
-    {% assign cur_position = increment cur_position %}
-    {% assign next = site.data.version_lst.versions[cur_position + 1] %}
-  {% else %}
-    {% assign show_next = false %}
+    {% capture next %}{{ site.data.version_lst.versions[cur_position + 1] }}{% endcapture %}
   {% endunless %}
 {% else %}
   {% assign show_last = false %}
