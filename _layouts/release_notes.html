@@ -36,7 +36,7 @@ layout: default
                 Previous release: {% if show_last == true %}<a href="release-{{ last }}.html">{{ last }}</a>{% else %}{{ site.data.version_lst.last }}{% endif %}
               </td>
               <td width="50%">
-                Next release: {% if show_next == true %}<a href="release-{{ next }}.html">{{ next }}</a>{% endif %}
+                Next release: {% if show_next == true %}<a href="release-{{ next }}.html">{{ next }}</a>{% else %}{{ page.version }}{% endif %}
               </td>
             </tr>
           </table>
@@ -48,6 +48,9 @@ layout: default
         <td style="border: hidden"></td>
         <td style="border: hidden">
           <center>Return to <a href="release-notes">release notes index</a></center>
+        </td>
+        <td style="border: hidden">
+          <center>Return to <a href="index.html">main page</a></center>
         </td>
         <td style="border: hidden"></td>
       </tr>
