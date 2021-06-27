@@ -6,9 +6,9 @@
 # Title for pages without a custom title
 # The default preference is:
 # Page title -> layout title -> global title
-title: DOSBox-X - Complete DOS emulation package
+title: "DOSBox-X - Complete DOS emulation package"
 # SEO meta tags
 seo:
-  description: DOSBox-X: Free, cross-platform and complete DOS, Windows 3.x and 9x emulation package
+  description: "DOSBox-X: Free, cross-platform and complete DOS, Windows 3.x and 9x emulation package"
 
 ### End site params ###
