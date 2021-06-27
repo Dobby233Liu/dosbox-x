@@ -1,10 +1,12 @@
 ---
 title: DOSBox-X {{ page.version }} Release Notes
+layout: default
 ---
 
-<!-- REQUIRED in page namespace: version date -->
-
-<!-- hacky nav -->
+{% comment %}
+REQUIRED in page namespace: version date
+hacky nav
+{% endcomment %}
 {% assign cur_position = -1 %}
 {% assign show_last = false %}
 {% assign last = "" %}
@@ -19,12 +21,12 @@ title: DOSBox-X {{ page.version }} Release Notes
 {% endfor %}
 {% if cur_position != -1 %}
   {% assign total = site.data.version_lst.size - 1 %}
-  {% if cur_position < 1 %}
-    {% assign show_last = false %}
-  {% endif %}
-  {% if cur_position >= total %}
-    {% assign show_next = false %}
-  {% endif %}
+  {% unless cur_position < 1 %}
+    {% assign show_last = true %}
+  {% endunless %}
+  {% unless cur_position >= total %}
+    {% assign show_next = true %}
+  {% endunless %}
   {% if show_last == true %}
     {% assign last = site.data.version_lst[cur_position - 1] %}
   {% endif %}
@@ -62,9 +64,18 @@ title: DOSBox-X {{ page.version }} Release Notes
           <table width="100%" style="text-align: center; font-weight: bold">
             <tr>
               <td width="50%">
-                Previous release: 0.83.13 (<a href="release-0.83.13.html">release notes</a>)
+                Previous release:
+                {% if show_last == true %}
+                <a href="release-{{ last }}.html">{{ last }}</a>
+                {% else %}
+                {{ site.data.version_lst.last }}
+                {% endif %}
               </td>
               <td width="50%">
+                Next release:
+                {% if show_next == true %}
+                <a href="release-{{ next }}.html">{{ next }}</a>
+                {% endif %}
               </td>
             </tr>
           </table>
