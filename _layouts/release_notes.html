@@ -28,11 +28,11 @@ hacky nav
   {% endunless %}
   {% if show_last == true %}
     {% assign last = site.data.version_lst[cur_position - 1] %}
-    {% echo last %}
+    {{ last }}
   {% endif %}
   {% if show_next == true %}
     {% assign next = site.data.version_lst[cur_position + 1] %}
-    {% echo next %}
+    {{ next }}
   {% endif %}
 {% else %}
 Big Fail
