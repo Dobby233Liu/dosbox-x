@@ -11,20 +11,20 @@ hacky nav code
 {% for version in site.data.version_lst.versions %}
   {% if version == page.version %}
     {% assign cur_position = forloop.index0 %}
-    FOUND pos {{ cur_position }}
+    FOUND pos {{ cur_position }}<br />
     {% break %} 
   {% endif %}
 {% endfor %}
 {% if cur_position != -1 %}
   {% assign total = site.data.version_lst.size %}
   {% decrement total %}
-  {{ total }}
+  {{ total }}<br />
   {% unless cur_position < 1 %}
     {% assign show_last = true %}
     {% decrement cur_position %}
     {% assign last = site.data.version_lst[cur_position] %}
     {% increment cur_position %}
-    FOUND last
+    FOUND last {{ last }}<br />
   {% else %}
     {% assign show_last = false %}
   {% endunless %}                     
@@ -33,7 +33,7 @@ hacky nav code
     {% increment cur_position %}
     {% assign next = site.data.version_lst[cur_position + 1] %}
     {% decrement cur_position %}
-    FOUND next
+    FOUND next {{ next }}<br />
   {% else %}
     {% assign show_next = false %}
   {% endunless %}
