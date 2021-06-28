@@ -30,10 +30,7 @@
 #include <errno.h>
 #endif
 
-/* Include system network headers
- * FIXME/NOTE: for some reasons MSYS2's mingw32 gcc
- * complains about ip_mreq while building
- * so we hack to undef ip_add_membership */
+/* Include system network headers */
 #if defined(__WIN32__) || defined(WIN32)
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define __USE_W32_SOCKETS
@@ -46,9 +43,6 @@
  * and is defined only for winsock2. */
 typedef int socklen_t;
 #endif /* W64 */
-#if defined(__MINGW32__)
-#undef IP_ADD_MEMBERSHIP
-#endif
 #include <iphlpapi.h>
 #else /* UNIX */
 #include <sys/types.h>
