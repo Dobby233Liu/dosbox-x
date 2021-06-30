@@ -16,9 +16,3 @@ versions:
   - 0.83.13
   - 0.83.14
   - 0.83.15
-
-# Used in _includes/version.html
-# Sync the following with version's release note file
-latest:
-  version: 0.83.15
-  date: June 30, 2021
