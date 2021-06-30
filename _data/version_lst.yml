@@ -10,12 +10,13 @@ versions:
   - 0.83.12
   - 0.83.13
   - 0.83.14
+  - 0.83.15
 
 # Used in _includes/version.html
 # Sync following with release note file
 latest:
-  version: 0.83.14
-  date: June 1, 2021
+  version: 0.83.15
+  date: June 30, 2021
 
 # What to show when there is none
 # ahead in version list
