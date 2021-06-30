@@ -124,7 +124,7 @@ jobs:
         with:
           MSYSTEM: MINGW${{ matrix.arch }}
           release: true
-          #update: true
+          update: true
           install: >-
             base-devel
             git
