@@ -20,7 +20,7 @@
     
     {%- unless page.override_title or layout.override_title -%}
     
-    <title>{{ page.title || layout.title || tl_title || site.title }}</title>{%- endunless %}
+    <title>{{ page.title | default: layout.title | default: tl_title | default: site.title }}</title>{%- endunless %}
   </head>
 
   <body>
