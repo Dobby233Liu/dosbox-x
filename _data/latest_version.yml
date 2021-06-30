@@ -1,0 +1,6 @@
+# Latest version info file
+# Used in _includes/version.html
+
+# Sync the following with version's release note file
+version: 0.83.15
+date: June 30, 2021
