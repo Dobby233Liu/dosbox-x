@@ -29,7 +29,7 @@ seo:
 # To add a version onto this site (can't figure out where to put this, but anyway):
 # 1. Edit _data/version_lst.yml - add a entry to versions array,
 # (remember that the version array must in the order of older->newer)
-# change parameters in latest if added version is latest.
+# change parameters in _data/latest_version.yml too if added version is latest.
 # Also change last to a older version than the version you're adding (nothing if none)
 # if you're adding the version specified in last. (last is a placeholder string)
 # The added version will show up in /release-notes.
