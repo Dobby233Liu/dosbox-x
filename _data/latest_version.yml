@@ -4,3 +4,21 @@
 # Sync the following with version's release note file
 version: 0.83.15
 date: June 30, 2021
+
+# supported platforms gallery (parameters doesn't make sense)
+supported_platforms:
+  - img: windows
+    title: Windows
+  - img: linux
+    title: Linux
+  - img: macos
+    title: macOS
+  - img: msdos
+    title: MS-DOS
+
+# links
+attachments:
+  windows:
+    installer: https://github.com/joncampbell123/dosbox-x/releases/download/dosbox-x-v0.83.14/dosbox-x-windows-0.83.14-setup.exe
+    installer-allusers: https://github.com/joncampbell123/dosbox-x/releases/download/dosbox-x-v0.83.14/dosbox-x-windows-0.83.14-setup-allusers.exe
+    choose-package: https://github.com/joncampbell123/dosbox-x/blob/master/INSTALL.md#windows-packages-installer-or-portable
