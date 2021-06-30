@@ -7,7 +7,7 @@ title: DOSBox-X [[_PVERSION_]] Release Notes
 <div style="text-align: center">
     <h3 style="padding-top: 10px">DOSBox-X {{ page.version }} Release Notes</h3>
     <h4 style="padding-bottom: 15px; font-weight: normal">Release Date: <span style="color: green">{{ page.date }}</span></h4>
-    {%- if site.data.version_lst.latest.version == page.version -%}
+    {%- if site.data.latest_version.version == page.version -%}
     <p>Please report any issues in our <a href="https://github.com/joncampbell123/dosbox-x/issues">issue tracker</a>.</p>
     <p>Also, make sure to check out our <a href="wiki">wiki</a>.</p>
     {%- endif -%}
@@ -31,7 +31,7 @@ title: DOSBox-X [[_PVERSION_]] Release Notes
                 Previous release: {% if show_last == true %}{{ last }} <a href="release-{{ last }}.html">(release notes)</a>{% else %}{{ site.data.version_lst.last }}{% endif %}
               </td>
               <td width="50%">
-                Latest release: {{ site.data.version_lst.latest.version }} {% if site.data.version_lst.latest.version == page.version %}(release notes){% else %}<a href="release-{{ site.data.version_lst.latest.version }}.html">(release notes)</a>{% endif %}
+                Latest release: {{ site.data.latest_version.version }} {% if site.data.latest_version.version == page.version %}(release notes){% else %}<a href="release-{{ site.data.latest_version.version }}.html">(release notes)</a>{% endif %}
               </td>
               <td width="25%">
                 Next release: {% if show_next == true %}{{ next }} <a href="release-{{ next }}.html">(release notes)</a>{% else %}trunk <a href="https://github.com/joncampbell123/dosbox-x/blob/master/CHANGELOG#L1">(changelog on branch <code>master</code>)</a>{% endif %}
