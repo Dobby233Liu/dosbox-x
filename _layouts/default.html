@@ -19,8 +19,8 @@
     <link rel="icon" type="image/svg+xml" href="images/dosbox-x-logo.svg">
     
     {%- unless page.override_title or layout.override_title -%}
-    
-    <title>{{ page.title | default: layout.title | default: tl_title | default: site.title }}</title>{%- endunless %}
+    {% comment %} biggest hax {% endcomment %}
+    <title>{{ page.title | default: layout.title | default: site.title | replace: "[[_PVERSION_]]", page.version }}</title>{%- endunless %}
   </head>
 
   <body>
