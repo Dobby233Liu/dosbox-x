@@ -1,9 +1,10 @@
-{% assign latest_version = site.data.version_lst.latest.version %}
-{% assign latest_version_date = site.data.version_lst.latest.date %}
+{%- assign vemeta = site.data.latest_version -%}
+{%- assign latest_version = vemeta.version -%}
+{%- assign latest_version_date = vemeta.date -%}
 <td width="20%" style="border: hidden; min-width: 300px">
-  <h4>Latest Release: <span style="color: red">{{ latest_version }}</span></h4>
-  <h4>Release Date: <span style="color: green">{{ latest_version_date }}</span></h4>
-  <h4><a href="release-{{ latest_version }}.html">DOSBox-X {{ latest_version }} Release Notes</a></h4>
+  <h4>Latest Release: <span style="color: red">{{ vemeta.version }}</span></h4>
+  <h4>Release Date: <span style="color: green">{{ vemeta.date }}</span></h4>
+  <h4><a href="release-{{ latest_version }}.html">DOSBox-X {{ vemeta.version }} Release Notes</a></h4>
   <h4><a href="release-notes">Previous Release Notes</a></h4>
   <h4>Supported Platforms:</h4>
   <img src="images/windows_logo.png" title="Windows" alt="Windows logo" width="50" height="50" />&nbsp;
