@@ -16,9 +16,22 @@ supported_platforms:
   - img: msdos
     title: MS-DOS
 
-# links
+# links on homepage
+# Warning: doc links should be updated in _includes/version.html
 attachments:
   windows:
     installer: https://github.com/joncampbell123/dosbox-x/releases/download/dosbox-x-v0.83.14/dosbox-x-windows-0.83.14-setup.exe
-    installer-allusers: https://github.com/joncampbell123/dosbox-x/releases/download/dosbox-x-v0.83.14/dosbox-x-windows-0.83.14-setup-allusers.exe
-    choose-package: https://github.com/joncampbell123/dosbox-x/blob/master/INSTALL.md#windows-packages-installer-or-portable
+    installer_allusers: https://github.com/joncampbell123/dosbox-x/releases/download/dosbox-x-v0.83.14/dosbox-x-windows-0.83.14-setup-allusers.exe
+  linux:
+    flatpak_hub: https://flathub.org/apps/details/com.dosbox_x.DOSBox-X
+    rpm: https://github.com/rderooy/dosbox-x-rpm/raw/master/dosbox-x-0.83.14-1.fc34.x86_64.rpm
+  macos:
+    x86_64: https://github.com/joncampbell123/dosbox-x/releases/download/dosbox-x-v0.83.14/dosbox-x-macosx-x86_64-20210531184050.zip
+    arm64: https://github.com/joncampbell123/dosbox-x/releases/download/dosbox-x-v0.83.14/dosbox-x-macosx-arm64-20210531191420.zip
+  msdos:
+    hx: https://github.com/joncampbell123/dosbox-x/releases/download/dosbox-x-v0.83.14/dosbox-x-mingw-hx-dos-20210601013916.zip
+    lin: https://github.com/joncampbell123/dosbox-x/releases/download/dosbox-x-v0.83.14/dosbox-x-dos-0.83.14-loadlin.zip
+  src:
+    zip: https://github.com/joncampbell123/dosbox-x/archive/refs/tags/dosbox-x-v0.83.14.zip
+    tgz: https://github.com/joncampbell123/dosbox-x/archive/refs/tags/dosbox-x-v0.83.14.tar.gz
+    build: https://github.com/joncampbell123/dosbox-x/blob/master/BUILD.md
